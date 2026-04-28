@@ -66,7 +66,7 @@ public class AwaitPriortyInProgressTest {
 		prop = basePage.init_prop();
 		testEnum = method.getName().toUpperCase();
 
-		driver = basePage.init_driver1(prop, testEnum);
+	//	driver = basePage.init_driver1(prop, testEnum);
 		APIServices.createVisitUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
 		loginPage = new LoginPage(driver);
 		credentials = new Credentials(prop.getProperty("username"), prop.getProperty("password"));
