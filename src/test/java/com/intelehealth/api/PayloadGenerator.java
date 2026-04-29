@@ -30,13 +30,11 @@ public class PayloadGenerator {
 	private static String ENCOUNTER_DATE_AND_TIME = generateEncounterDatetime();
 	private static final String LOCATION_UUID = "9172f0c5-2a6d-43ba-84f8-37276a2db14b";
 
-	
+	static String VISIT_UUID_New = "";
 
 	String base64CredentialsCreatePatient = "bnVyc2UxOk51cnNlMTIz";
 	String base64CredentialsCreateVisit = "bnVyc2UxOk51cnNlMTIz";
 
-	
-	
 	protected static Map<String, Object> createObservation(String concept, String uuid, String value) {
 		Map<String, Object> observation = new HashMap<>();
 		observation.put("concept", concept);
@@ -51,18 +49,18 @@ public class PayloadGenerator {
 		observation.put("value", value);
 		return observation;
 	}
-	
-	
+
 	// API METHODS
 //CREATE VISIT 
-	public  static Map<String, Object> createVisitUsingRestAssured() {
-//		final String PERSON_UUID = generateUUID();
-//		final String ENCOUNTER_ONE_UUID = generateUUID();
-//		final String ENCOUNTER_TWO_UUID = generateUUID();
-//		final String VISIT_UUID = generateUUID();
+	public static Map<String, Object> createVisitUsingRestAssured() {
+		final String PERSON_UUID = generateUUID();
+		final String ENCOUNTER_ONE_UUID = generateUUID();
+		final String ENCOUNTER_TWO_UUID = generateUUID();
+		final String VISIT_UUID = generateUUID();
+		//VISIT_UUID_New = VISIT_UUID;
 //		String ENCOUNTER_DATE_AND_TIME = generateEncounterDatetime();
 //		final String LOCATION_UUID = "9172f0c5-2a6d-43ba-84f8-37276a2db14b";
-		//Change here
+		// Change here
 //		VISIT_UUID=generateUUID();
 		List<Object> appointments = new ArrayList<>();
 
@@ -205,11 +203,10 @@ public class PayloadGenerator {
 		Map<String, Object> namesData = new LinkedHashMap<>();
 		String date = new SimpleDateFormat("ddMMMMyyyy").format(new Date()).toUpperCase();
 
-        int random = new Random().nextInt(9000) + 1000; // 4-digit random
+		int random = new Random().nextInt(9000) + 1000; // 4-digit random
 
-        String fullName = "QA_Automation_Test_" + date + "_" + random;    
-	        
-	        
+		String fullName = "QA_Automation_Test_" + date + "_" + random;
+
 		namesData.put("familyName", date + "_" + random);
 
 		namesData.put("givenName", "QA Automation");
@@ -263,196 +260,190 @@ public class PayloadGenerator {
 		requestBody.put("visits", visits);
 
 		// Print the payload
-	//	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 		// Print the payload in a pretty JSON format
-	//	System.out.println(gson.toJson(requestBody));
-		
-return requestBody;
+		// System.out.println(gson.toJson(requestBody));
+
+		return requestBody;
 	}
-	
+
 	public static Map<String, Object> createPriorityVisitUsingRestAssured() {
 		final String PERSON_UUID = generateUUID();
 		final String ENCOUNTER_ONE_UUID = generateUUID();
 		final String ENCOUNTER_TWO_UUID = generateUUID();
 		final String VISIT_UUID = generateUUID();
 		String ENCOUNTER_DATE_AND_TIME = generateEncounterDatetime();
-		//final String LOCATION_UUID = "9172f0c5-2a6d-43ba-84f8-37276a2db14b";
-	    List<Object> appointments = new ArrayList<>();
+		// final String LOCATION_UUID = "9172f0c5-2a6d-43ba-84f8-37276a2db14b";
+		List<Object> appointments = new ArrayList<>();
 
-	    // ===================== ENCOUNTERS =====================
-	    List<Map<String, Object>> encounters = new ArrayList<>();
+		// ===================== ENCOUNTERS =====================
+		List<Map<String, Object>> encounters = new ArrayList<>();
 
-	    // ----------- 1st Encounter -----------
-	    Map<String, Object> firstEncounter = new LinkedHashMap<>();
-	    firstEncounter.put("encounterDatetime", ENCOUNTER_DATE_AND_TIME);
+		// ----------- 1st Encounter -----------
+		Map<String, Object> firstEncounter = new LinkedHashMap<>();
+		firstEncounter.put("encounterDatetime", ENCOUNTER_DATE_AND_TIME);
 
-	    List<Map<String, Object>> encounterProviders = new ArrayList<>();
-	    Map<String, Object> providerMap = new LinkedHashMap<>();
-	    providerMap.put("encounterRole", "73bbb069-9781-4afc-a9d1-54b6b2270e04");
-	    providerMap.put("provider", "612322d6-8b80-4027-af3a-c2805bd32007");
-	    encounterProviders.add(providerMap);
+		List<Map<String, Object>> encounterProviders = new ArrayList<>();
+		Map<String, Object> providerMap = new LinkedHashMap<>();
+		providerMap.put("encounterRole", "73bbb069-9781-4afc-a9d1-54b6b2270e04");
+		providerMap.put("provider", "612322d6-8b80-4027-af3a-c2805bd32007");
+		encounterProviders.add(providerMap);
 
-	    firstEncounter.put("encounterProviders", encounterProviders);
-	    firstEncounter.put("encounterType", "67a71486-1a54-468f-ac3e-7091a9a79584");
-	    firstEncounter.put("location", LOCATION_UUID);
+		firstEncounter.put("encounterProviders", encounterProviders);
+		firstEncounter.put("encounterType", "67a71486-1a54-468f-ac3e-7091a9a79584");
+		firstEncounter.put("location", LOCATION_UUID);
 
-	    List<Map<String, Object>> obs = new ArrayList<>();
-	    obs.add(createObservation("5090AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "66"));
-	    obs.add(createObservation("5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "5"));
-	    obs.add(createObservation("5087AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "100"));
-	    obs.add(createObservation("5085AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "100"));
-	    obs.add(createObservation("5086AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "100"));
-	    obs.add(createObservation("5088AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "37.78"));
-	    obs.add(createObservation("5242AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "10"));
-	    obs.add(createObservation("5092AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "100"));
+		List<Map<String, Object>> obs = new ArrayList<>();
+		obs.add(createObservation("5090AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "66"));
+		obs.add(createObservation("5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "5"));
+		obs.add(createObservation("5087AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "100"));
+		obs.add(createObservation("5085AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "100"));
+		obs.add(createObservation("5086AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "100"));
+		obs.add(createObservation("5088AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "37.78"));
+		obs.add(createObservation("5242AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "10"));
+		obs.add(createObservation("5092AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", generateUUID(), "100"));
 
-	    firstEncounter.put("obs", obs);
-	    firstEncounter.put("patient", PERSON_UUID);
-	    firstEncounter.put("uuid", ENCOUNTER_ONE_UUID);
-	    firstEncounter.put("visit", VISIT_UUID);
-	    firstEncounter.put("voided", 0);
+		firstEncounter.put("obs", obs);
+		firstEncounter.put("patient", PERSON_UUID);
+		firstEncounter.put("uuid", ENCOUNTER_ONE_UUID);
+		firstEncounter.put("visit", VISIT_UUID);
+		firstEncounter.put("voided", 0);
 
-	    encounters.add(firstEncounter);
+		encounters.add(firstEncounter);
 
-	    // ----------- 2nd Encounter -----------
-	    Map<String, Object> secondEncounter = new LinkedHashMap<>();
-	    secondEncounter.put("encounterDatetime", ENCOUNTER_DATE_AND_TIME);
+		// ----------- 2nd Encounter -----------
+		Map<String, Object> secondEncounter = new LinkedHashMap<>();
+		secondEncounter.put("encounterDatetime", ENCOUNTER_DATE_AND_TIME);
 
-	    List<Map<String, Object>> encounterProviders2 = new ArrayList<>();
-	    Map<String, Object> provider2 = new LinkedHashMap<>();
-	    provider2.put("encounterRole", "73bbb069-9781-4afc-a9d1-54b6b2270e04");
-	    provider2.put("provider", "612322d6-8b80-4027-af3a-c2805bd32007");
-	    encounterProviders2.add(provider2);
+		List<Map<String, Object>> encounterProviders2 = new ArrayList<>();
+		Map<String, Object> provider2 = new LinkedHashMap<>();
+		provider2.put("encounterRole", "73bbb069-9781-4afc-a9d1-54b6b2270e04");
+		provider2.put("provider", "612322d6-8b80-4027-af3a-c2805bd32007");
+		encounterProviders2.add(provider2);
 
-	    secondEncounter.put("encounterProviders", encounterProviders2);
-	    secondEncounter.put("encounterType", "8d5b27bc-c2cc-11de-8d13-0010c6dffd0f");
-	    secondEncounter.put("location", LOCATION_UUID);
+		secondEncounter.put("encounterProviders", encounterProviders2);
+		secondEncounter.put("encounterType", "8d5b27bc-c2cc-11de-8d13-0010c6dffd0f");
+		secondEncounter.put("location", LOCATION_UUID);
 
-	    List<Map<String, Object>> obs2 = new ArrayList<>();
+		List<Map<String, Object>> obs2 = new ArrayList<>();
 
-	    obs2.add(createObservation("3edb0e09-9135-481e-b8f0-07a26fa9a5ce", generateUUID(),
-	            "►\u003cb\u003eCold, Sneezing\u003c/b\u003e: \u003cbr/\u003e• Precipitating factors - Cold weather.\u003cbr/\u003e• Prior treatment sought - None.\u003cbr/\u003e"));
+		obs2.add(createObservation("3edb0e09-9135-481e-b8f0-07a26fa9a5ce", generateUUID(),
+				"►\u003cb\u003eCold, Sneezing\u003c/b\u003e: \u003cbr/\u003e• Precipitating factors - Cold weather.\u003cbr/\u003e• Prior treatment sought - None.\u003cbr/\u003e"));
 
-	    obs2.add(createObservation("e1761e85-9b50-48ae-8c4d-e6b7eeeba084", generateUUID(),
-	            "\u003cb\u003eGeneral exams:\u003c/b\u003e"));
+		obs2.add(createObservation("e1761e85-9b50-48ae-8c4d-e6b7eeeba084", generateUUID(),
+				"\u003cb\u003eGeneral exams:\u003c/b\u003e"));
 
-	    obs2.add(createObservation("62bff84b-795a-45ad-aae1-80e7f5163a82", generateUUID(),
-	            "• Current Vaccinations status - Complete."));
+		obs2.add(createObservation("62bff84b-795a-45ad-aae1-80e7f5163a82", generateUUID(),
+				"• Current Vaccinations status - Complete."));
 
-	    obs2.add(createObservation("d63ae965-47fb-40e8-8f08-1f46a8a60b2b", generateUUID(),
-	            "• Family history - NA"));
+		obs2.add(createObservation("d63ae965-47fb-40e8-8f08-1f46a8a60b2b", generateUUID(), "• Family history - NA"));
 
-	    secondEncounter.put("obs", obs2);
-	    secondEncounter.put("patient", PERSON_UUID);
-	    secondEncounter.put("uuid", ENCOUNTER_TWO_UUID);
+		secondEncounter.put("obs", obs2);
+		secondEncounter.put("patient", PERSON_UUID);
+		secondEncounter.put("uuid", ENCOUNTER_TWO_UUID);
 
-	    // 🔥 IMPORTANT FIX (as per payload)
-	    secondEncounter.put("visit", generateUUID());
+		// 🔥 IMPORTANT FIX (as per payload)
+		secondEncounter.put("visit", generateUUID());
 
-	    secondEncounter.put("voided", 0);
+		secondEncounter.put("voided", 0);
 
-	    encounters.add(secondEncounter);
+		encounters.add(secondEncounter);
 
-	    // ----------- 3rd Encounter (NEW) -----------
-	    Map<String, Object> thirdEncounter = new LinkedHashMap<>();
-	    thirdEncounter.put("encounterDatetime", ENCOUNTER_DATE_AND_TIME);
+		// ----------- 3rd Encounter (NEW) -----------
+		Map<String, Object> thirdEncounter = new LinkedHashMap<>();
+		thirdEncounter.put("encounterDatetime", ENCOUNTER_DATE_AND_TIME);
 
-	    List<Map<String, Object>> encounterProviders3 = new ArrayList<>();
-	    Map<String, Object> provider3 = new LinkedHashMap<>();
-	    provider3.put("encounterRole", "73bbb069-9781-4afc-a9d1-54b6b2270e04");
-	    provider3.put("provider", "612322d6-8b80-4027-af3a-c2805bd32007");
-	    encounterProviders3.add(provider3);
+		List<Map<String, Object>> encounterProviders3 = new ArrayList<>();
+		Map<String, Object> provider3 = new LinkedHashMap<>();
+		provider3.put("encounterRole", "73bbb069-9781-4afc-a9d1-54b6b2270e04");
+		provider3.put("provider", "612322d6-8b80-4027-af3a-c2805bd32007");
+		encounterProviders3.add(provider3);
 
-	    thirdEncounter.put("encounterProviders", encounterProviders3);
-	    thirdEncounter.put("encounterType", "ca5f5dc3-4f0b-4097-9cae-5cf2eb44a09c");
-	    thirdEncounter.put("location", LOCATION_UUID);
+		thirdEncounter.put("encounterProviders", encounterProviders3);
+		thirdEncounter.put("encounterType", "ca5f5dc3-4f0b-4097-9cae-5cf2eb44a09c");
+		thirdEncounter.put("location", LOCATION_UUID);
 
-	    thirdEncounter.put("patient", PERSON_UUID);
+		thirdEncounter.put("patient", PERSON_UUID);
 
-	    // 🔥 SAME UUID AS SECOND (as per payload)
-	    thirdEncounter.put("uuid", ENCOUNTER_TWO_UUID);
+		// 🔥 SAME UUID AS SECOND (as per payload)
+		thirdEncounter.put("uuid", ENCOUNTER_TWO_UUID);
 
-	    thirdEncounter.put("voided", 0);
+		thirdEncounter.put("voided", 0);
 
-	    encounters.add(thirdEncounter);
+		encounters.add(thirdEncounter);
 
-	    // ===================== PATIENTS =====================
-	    List<Map<String, Object>> patients = new ArrayList<>();
+		// ===================== PATIENTS =====================
+		List<Map<String, Object>> patients = new ArrayList<>();
 
-	    Map<String, Object> patientMap = new LinkedHashMap<>();
-	    List<Map<String, Object>> identifiersList = new ArrayList<>();
+		Map<String, Object> patientMap = new LinkedHashMap<>();
+		List<Map<String, Object>> identifiersList = new ArrayList<>();
 
-	    Map<String, Object> identifier = new LinkedHashMap<>();
-	    identifier.put("identifierType", "05a29f94-c0ed-11e2-94be-8c13b969e334");
-	    identifier.put("location", LOCATION_UUID);
-	    identifier.put("preferred", true);
+		Map<String, Object> identifier = new LinkedHashMap<>();
+		identifier.put("identifierType", "05a29f94-c0ed-11e2-94be-8c13b969e334");
+		identifier.put("location", LOCATION_UUID);
+		identifier.put("preferred", true);
 
-	    identifiersList.add(identifier);
+		identifiersList.add(identifier);
 
-	    patientMap.put("identifiers", identifiersList);
-	    patientMap.put("person", PERSON_UUID);
+		patientMap.put("identifiers", identifiersList);
+		patientMap.put("person", PERSON_UUID);
 
-	    patients.add(patientMap);
+		patients.add(patientMap);
 
-	    // ===================== PERSONS =====================
-	    List<Map<String, Object>> persons = new ArrayList<>();
-	    Map<String, Object> person = new LinkedHashMap<>();
+		// ===================== PERSONS =====================
+		List<Map<String, Object>> persons = new ArrayList<>();
+		Map<String, Object> person = new LinkedHashMap<>();
 
-	    person.put("addresses", List.of(Map.of(
-	            "address1", "Address Line 1",
-	            "address2", "Address Line 2",
-	            "cityVillage", "Navi Mumbai:Ghansoli",
-	            "country", "India",
-	            "postalCode", "999999",
-	            "stateProvince", "Maharashtra"
-	    )));
+		person.put("addresses",
+				List.of(Map.of("address1", "Address Line 1", "address2", "Address Line 2", "cityVillage",
+						"Navi Mumbai:Ghansoli", "country", "India", "postalCode", "999999", "stateProvince",
+						"Maharashtra")));
 
-	    List<Map<String, Object>> attributes = new ArrayList<>();
-	    attributes.add(createAttributesObservation("14d4f066-15f5-102d-96e4-000c29c2a5d7", "+917777777777"));
+		List<Map<String, Object>> attributes = new ArrayList<>();
+		attributes.add(createAttributesObservation("14d4f066-15f5-102d-96e4-000c29c2a5d7", "+917777777777"));
 
-	    person.put("attributes", attributes);
-	    person.put("birthdate", "2023-03-02");
-	    person.put("gender", "M");
+		person.put("attributes", attributes);
+		person.put("birthdate", "2023-03-02");
+		person.put("gender", "M");
 
-	    person.put("names", List.of(Map.of(
-	            "familyName", "Qa" + new Random().nextInt(100),
-	            "givenName", "JAN",
-	            "middleName", "Test"
-	    )));
+		person.put("names", List
+				.of(Map.of("familyName", "Qa" + new Random().nextInt(100), "givenName", "JAN", "middleName", "Test")));
 
-	    person.put("uuid", PERSON_UUID);
+		person.put("uuid", PERSON_UUID);
 
-	    persons.add(person);
+		persons.add(person);
 
-	    // ===================== VISITS =====================
-	    List<Map<String, Object>> visits = new ArrayList<>();
-	    Map<String, Object> visit = new LinkedHashMap<>();
+		// ===================== VISITS =====================
+		List<Map<String, Object>> visits = new ArrayList<>();
+		Map<String, Object> visit = new LinkedHashMap<>();
 
-	    visit.put("attributes", List.of(
-	            Map.of("attributeType", "3f296939-c6d3-4d2e-b8ca-d7f4bfd42c2d", "uuid", generateUUID(), "value", "General Physician"),
-	            Map.of("attributeType", "64aa50c8-e913-48c6-b8ad-dfa0bccb202b", "uuid", generateUUID(), "value", "No Data")
-	    ));
+		visit.put("attributes",
+				List.of(Map.of("attributeType", "3f296939-c6d3-4d2e-b8ca-d7f4bfd42c2d", "uuid", generateUUID(), "value",
+						"General Physician"),
+						Map.of("attributeType", "64aa50c8-e913-48c6-b8ad-dfa0bccb202b", "uuid", generateUUID(), "value",
+								"No Data")));
 
-	    visit.put("location", LOCATION_UUID);
-	    visit.put("patient", PERSON_UUID);
-	    visit.put("startDatetime", ENCOUNTER_DATE_AND_TIME);
-	    visit.put("uuid", VISIT_UUID);
-	    visit.put("visitType", "a86ac96e-2e07-47a7-8e72-8216a1a75bfd");
+		visit.put("location", LOCATION_UUID);
+		visit.put("patient", PERSON_UUID);
+		visit.put("startDatetime", ENCOUNTER_DATE_AND_TIME);
+		visit.put("uuid", VISIT_UUID);
+		visit.put("visitType", "a86ac96e-2e07-47a7-8e72-8216a1a75bfd");
 
-	    visits.add(visit);
+		visits.add(visit);
 
-	    // ===================== FINAL BODY =====================
-	    Map<String, Object> requestBody = new LinkedHashMap<>();
-	    requestBody.put("appointments", appointments);
-	    requestBody.put("encounters", encounters);
-	    requestBody.put("patients", patients);
-	    requestBody.put("persons", persons);
-	    requestBody.put("providers", new ArrayList<>());
-	    requestBody.put("visits", visits);
+		// ===================== FINAL BODY =====================
+		Map<String, Object> requestBody = new LinkedHashMap<>();
+		requestBody.put("appointments", appointments);
+		requestBody.put("encounters", encounters);
+		requestBody.put("patients", patients);
+		requestBody.put("persons", persons);
+		requestBody.put("providers", new ArrayList<>());
+		requestBody.put("visits", visits);
 
-	    return requestBody;
+		return requestBody;
 	}
+
 	public static Map<String, Object> startVisitNote() {
 		System.out.println("personUUID = " + PERSON_UUID);
 		System.out.println("encounterOneUUID = " + ENCOUNTER_ONE_UUID);
@@ -479,170 +470,165 @@ return requestBody;
 		return patient;
 	}
 
-	
 	public static String signAndSubmit() {
-		 JSONObject payload = new JSONObject();
+		JSONObject payload = new JSONObject();
 
-	        payload.put("patient", PERSON_UUID);
-	        payload.put("encounterType", "bd1fbfaa-f5fb-4ebd-b75c-564506fc309e");
-	        payload.put("visit", VISIT_UUID);
-	        payload.put("encounterDatetime", ENCOUNTER_DATE_AND_TIME);
+		payload.put("patient", PERSON_UUID);
+		payload.put("encounterType", "bd1fbfaa-f5fb-4ebd-b75c-564506fc309e");
+		payload.put("visit", VISIT_UUID);
+		payload.put("encounterDatetime", ENCOUNTER_DATE_AND_TIME);
 
-	        JSONArray encounterProviders = new JSONArray();
-	        JSONObject providerObj = new JSONObject();
-	        providerObj.put("provider", "f3b2f923-ba9d-4ca5-a98d-abe23a512266");
-	        providerObj.put("encounterRole", "73bbb069-9781-4afc-a9d1-54b6b2270e03");
-	        encounterProviders.put(providerObj);
-	        payload.put("encounterProviders", encounterProviders);
+		JSONArray encounterProviders = new JSONArray();
+		JSONObject providerObj = new JSONObject();
+		providerObj.put("provider", "f3b2f923-ba9d-4ca5-a98d-abe23a512266");
+		providerObj.put("encounterRole", "73bbb069-9781-4afc-a9d1-54b6b2270e03");
+		encounterProviders.put(providerObj);
+		payload.put("encounterProviders", encounterProviders);
 
-	        JSONArray obsArray = new JSONArray();
-	        JSONObject obsObj = new JSONObject();
-	        obsObj.put("concept", "7a9cb7bc-9ab9-4ff0-ae82-7a1bd2cca93e");
+		JSONArray obsArray = new JSONArray();
+		JSONObject obsObj = new JSONObject();
+		obsObj.put("concept", "7a9cb7bc-9ab9-4ff0-ae82-7a1bd2cca93e");
 
-	        // Escaped JSON as string
-	        String valueJsonString = new JSONObject()
-	                .put("name", "ANURAG R SANGALE")
-	                .put("uuid", "f3b2f923-ba9d-4ca5-a98d-abe23a512266")
-	                .put("fontOfSign", "Arty")
-	                .put("whatsapp", "8830308535")
-	                .put("registrationNumber", "12345678")
-	                .put("consultationLanguage", "English")
-	                .put("typeOfProfession", "MBBS")
-	                .put("workExperience", "1")
-	                .put("researchExperience", "1")
-	                .put("textOfSign", "Anurag R Sangale")
-	                .put("specialization", "General Physician")
-	                .put("phoneNumber", "7720919153")
-	                .put("countryCode", "91")
-	                .put("emailId", "anurag.ecorise@gmail.com")
-	                .put("workExperienceDetails", "10 YRS")
-	                .put("signatureType", "Generate")
-	                .put("signature", "data:image/png;base64,...") // Truncated for brevity
-	                .toString();
+		// Escaped JSON as string
+		String valueJsonString = new JSONObject().put("name", "ANURAG R SANGALE")
+				.put("uuid", "f3b2f923-ba9d-4ca5-a98d-abe23a512266").put("fontOfSign", "Arty")
+				.put("whatsapp", "8830308535").put("registrationNumber", "12345678")
+				.put("consultationLanguage", "English").put("typeOfProfession", "MBBS").put("workExperience", "1")
+				.put("researchExperience", "1").put("textOfSign", "Anurag R Sangale")
+				.put("specialization", "General Physician").put("phoneNumber", "7720919153").put("countryCode", "91")
+				.put("emailId", "anurag.ecorise@gmail.com").put("workExperienceDetails", "10 YRS")
+				.put("signatureType", "Generate").put("signature", "data:image/png;base64,...") // Truncated for brevity
+				.toString();
 
-	        obsObj.put("value", valueJsonString);
-	        obsArray.put(obsObj);
-	        payload.put("obs", obsArray);
-	        // Send the request
-	    //    System.out.println(payload.toString());
-	        return payload.toString();
-	    }
+		obsObj.put("value", valueJsonString);
+		obsArray.put(obsObj);
+		payload.put("obs", obsArray);
+		// Send the request
+		// System.out.println(payload.toString());
+		return payload.toString();
+	}
+
 	/**
-	 * Creates appointment payload with fully dynamic date/day/time.
-	 * Call this when you need a fresh appointment on every test run.
+	 * Creates appointment payload with fully dynamic date/day/time. Call this when
+	 * you need a fresh appointment on every test run.
 	 */
 	public static Map<String, Object> createAppointmentPayload() {
 
-	    int slotDuration = 30;
+		int slotDuration = 30;
 
-	    // ── Appointment object ─────────────────────────────────────────
-	    Map<String, Object> appointment = new LinkedHashMap<>();
+		// ── Appointment object ─────────────────────────────────────────
+		Map<String, Object> appointment = new LinkedHashMap<>();
 
-	    // ✅ This sets slotDate + slotDay internally
-	    String slotTime = DateTimeUtils.getNextSlotTimeAndAdjustDate(appointment);
+		// ✅ This sets slotDate + slotDay internally
+		String slotTime = DateTimeUtils.getNextSlotTimeAndAdjustDate(appointment);
 
-	    appointment.put("appointmentId", 0);
-	    appointment.put("drName", "arpan Middle doctor");
-	    appointment.put("hwAge", "26 1 13");
-	    appointment.put("hwGender", "M");
-	    appointment.put("hwName", "arpan middle user");
-	    appointment.put("hwUUID", "13a95b17-6dcc-4087-b447-66dfc96b4e00");
-	    appointment.put("locationUuid", LOCATION_UUID);
-	    appointment.put("openMrsId", "163T5-9");
-	    appointment.put("patientAge", "98 years");
-	    appointment.put("patientGender", "M");
-	    appointment.put("patientId", "dd932244-d1de-4c10-a677-cfa5a8a90807");
-	    appointment.put("patientName", "Arpan Appointment");
-	    appointment.put("patientPic", "");
+		appointment.put("appointmentId", 0);
+		appointment.put("drName", "arpan Middle doctor");
+		appointment.put("hwAge", "26 1 13");
+		appointment.put("hwGender", "M");
+		appointment.put("hwName", "arpan middle user");
+		appointment.put("hwUUID", "13a95b17-6dcc-4087-b447-66dfc96b4e00");
+		appointment.put("locationUuid", LOCATION_UUID);
+		appointment.put("openMrsId", "163T5-9");
+		appointment.put("patientAge", "98 years");
+		appointment.put("patientGender", "M");
+		appointment.put("patientId", "dd932244-d1de-4c10-a677-cfa5a8a90807");
+		appointment.put("patientName", "Arpan Appointment");
+		appointment.put("patientPic", "");
 
-	    // ❌ DO NOT set slotDate / slotDay again
+		// ❌ DO NOT set slotDate / slotDay again
 
-	    appointment.put("slotDuration", slotDuration);
-	    appointment.put("slotDurationUnit", "minutes");
-	    appointment.put("slotTime", slotTime);
+		appointment.put("slotDuration", slotDuration);
+		appointment.put("slotDurationUnit", "minutes");
+		appointment.put("slotTime", slotTime);
 
-	    appointment.put("speciality", "General Physician");
-	    appointment.put("sync", 0);
-	    appointment.put("userUuid", "bae4dc8b-a419-483d-9490-a3a2c7912bdf");
+		appointment.put("speciality", "General Physician");
+		appointment.put("sync", 0);
+		appointment.put("userUuid", "bae4dc8b-a419-483d-9490-a3a2c7912bdf");
 
-	    appointment.put("uuid", generateUUID());
-	    appointment.put("visitUuid", VISIT_UUID); 
+		appointment.put("uuid", generateUUID());
+		appointment.put("visitUuid", VISIT_UUID);
 
-	    // ── Final request body ─────────────────────────────────────────
-	    Map<String, Object> requestBody = new LinkedHashMap<>();
-	    requestBody.put("appointments", Collections.singletonList(appointment));
-	    requestBody.put("encounters", Collections.emptyList());
-	    requestBody.put("patients", Collections.emptyList());
-	    requestBody.put("persons", Collections.emptyList());
-	    requestBody.put("providers", Collections.emptyList());
-	    requestBody.put("visits", Collections.emptyList());
+		// ── Final request body ─────────────────────────────────────────
+		Map<String, Object> requestBody = new LinkedHashMap<>();
+		requestBody.put("appointments", Collections.singletonList(appointment));
+		requestBody.put("encounters", Collections.emptyList());
+		requestBody.put("patients", Collections.emptyList());
+		requestBody.put("persons", Collections.emptyList());
+		requestBody.put("providers", Collections.emptyList());
+		requestBody.put("visits", Collections.emptyList());
 
-	    return requestBody;
-	}
-	
-	public static Map<String, Object> createAppointmentPayload(String openMrsId, String patientId) {
-
-	    // ── Fetch real slot from API ───────────────────────────────────────────
-	    AppointmentSlotService slotService = new AppointmentSlotService();
-	    Map<String, Object> slot = slotService.getFirstAvailableSlot();
-
-	    // ── Extract slot values ────────────────────────────────────────────────
-	    String slotDate         = (String) slot.get("slotDate");
-	    String slotDay          = (String) slot.get("slotDay");
-	    String slotTime         = (String) slot.get("slotTime");
-	    int    slotDuration     = (int)    slot.get("slotDuration");
-	    String slotDurationUnit = (String) slot.get("slotDurationUnit");
-	    String userUuid         = (String) slot.get("userUuid");
-	    String drName           = (String) slot.get("drName");
-
-	    // ── Build appointment map ──────────────────────────────────────────────
-	    Map<String, Object> appointment = new LinkedHashMap<>();
-	    appointment.put("appointmentId",    0);
-	    appointment.put("drName",           drName);           // ← from slot API
-	    appointment.put("hwAge",            "26 1 13");
-	    appointment.put("hwGender",         "M");
-	    appointment.put("hwName",           "arpan middle user");
-	    appointment.put("hwUUID",           "13a95b17-6dcc-4087-b447-66dfc96b4e00");
-	    appointment.put("locationUuid",     LOCATION_UUID);
-	    appointment.put("openMrsId",        openMrsId);        // ← from visit response
-	    appointment.put("patientAge",       "98 years");
-	    appointment.put("patientGender",    "M");
-	    appointment.put("patientId",        patientId);        // ← from visit response
-	    appointment.put("patientName",      "Arpan Appointment");
-	    appointment.put("patientPic",       "");
-	    appointment.put("slotDate",         slotDate);         // ← from slot API
-	    appointment.put("slotDay",          slotDay);          // ← from slot API
-	    appointment.put("slotDuration",     slotDuration);     // ← from slot API
-	    appointment.put("slotDurationUnit", slotDurationUnit); // ← from slot API
-	    appointment.put("slotTime",         slotTime);         // ← from slot API
-	    appointment.put("speciality",       "General Physician");
-	    appointment.put("sync",             0);
-	    appointment.put("userUuid",         userUuid);         // ← from slot API
-	    appointment.put("uuid",             generateUUID());
-	    // uncomment create visit payload method to generate visit UUID and use that here, remove final modifier from VISIT_UUID to assign new value
-	    appointment.put("visitUuid",        VISIT_UUID);
-
-	    // ── Final request body ─────────────────────────────────────────────────
-	    Map<String, Object> requestBody = new LinkedHashMap<>();
-	    requestBody.put("appointments", Collections.singletonList(appointment));
-	    requestBody.put("encounters",   Collections.emptyList());
-	    requestBody.put("patients",     Collections.emptyList());
-	    requestBody.put("persons",      Collections.emptyList());
-	    requestBody.put("providers",    Collections.emptyList());
-	    requestBody.put("visits",       Collections.emptyList());
-
-	    return requestBody;
+		return requestBody;
 	}
 
-	
+	public static Map<String, Object> createAppointmentPayload(String openMrsId, String patientId, String visitUuid) {
+
+		// ── Fetch real slot from API ───────────────────────────────────────────
+		AppointmentSlotService slotService = new AppointmentSlotService();
+		Map<String, Object> slot = slotService.getFirstAvailableSlot();
+
+		// ── Extract slot values ────────────────────────────────────────────────
+		String slotDate = (String) slot.get("slotDate");
+		String slotDay = (String) slot.get("slotDay");
+		String slotTime = (String) slot.get("slotTime");
+		int slotDuration = (int) slot.get("slotDuration");
+		String slotDurationUnit = (String) slot.get("slotDurationUnit");
+		String userUuid = (String) slot.get("userUuid");
+		String drName = (String) slot.get("drName");
+		String date = new SimpleDateFormat("ddMMMMyyyy").format(new Date()).toUpperCase();
+
+		int random = new Random().nextInt(9000) + 1000; // 4-digit random
+
+		String fullName = "QA Automation Test " + date + "_" + random;
+		// ── Build appointment map ──────────────────────────────────────────────
+		Map<String, Object> appointment = new LinkedHashMap<>();
+		appointment.put("appointmentId", 0);
+		appointment.put("drName", drName); // ← from slot API
+		appointment.put("hwAge", "26 1 13");
+		appointment.put("hwGender", "M");
+		appointment.put("hwName", "arpan middle user");
+		appointment.put("hwUUID", "13a95b17-6dcc-4087-b447-66dfc96b4e00");
+		appointment.put("locationUuid", LOCATION_UUID);
+		appointment.put("openMrsId", openMrsId); // ← from visit response
+		appointment.put("patientAge", "98 years");
+		appointment.put("patientGender", "M");
+		appointment.put("patientId", patientId); // ← from visit response
+		appointment.put("patientName", fullName); // ← dynamic name for better identification in OpenMRS
+		appointment.put("patientPic", "");
+		appointment.put("slotDate", slotDate); // ← from slot API
+		appointment.put("slotDay", slotDay); // ← from slot API
+		appointment.put("slotDuration", slotDuration); // ← from slot API
+		appointment.put("slotDurationUnit", slotDurationUnit); // ← from slot API
+		appointment.put("slotTime", slotTime); // ← from slot API
+		appointment.put("speciality", "General Physician");
+		appointment.put("sync", 0);
+		appointment.put("userUuid", userUuid); // ← from slot API
+		appointment.put("uuid", generateUUID());
+		// uncomment create visit payload method to generate visit UUID and use that
+		// here, remove final modifier from VISIT_UUID to assign new value
+		appointment.put("visitUuid", visitUuid); // ← from visit response
+
+		// ── Final request body ─────────────────────────────────────────────────
+		Map<String, Object> requestBody = new LinkedHashMap<>();
+		requestBody.put("appointments", Collections.singletonList(appointment));
+		requestBody.put("encounters", Collections.emptyList());
+		requestBody.put("patients", Collections.emptyList());
+		requestBody.put("persons", Collections.emptyList());
+		requestBody.put("providers", Collections.emptyList());
+		requestBody.put("visits", Collections.emptyList());
+
+		return requestBody;
+	}
+
 	private static String generateUUID() {
 		return UUID.randomUUID().toString();
 	}
 	// ── Helper used by APIServices for logging ─────────────────────────────────
 
 	public static String toJson(Map<String, Object> payload) {
-	    return new GsonBuilder().setPrettyPrinting().create().toJson(payload);
+		return new GsonBuilder().setPrettyPrinting().create().toJson(payload);
 	}
+
 	protected static String generateEncounterDatetime() {
 		// Get current date-time with UTC offset
 		OffsetDateTime now = OffsetDateTime.now();
@@ -671,5 +657,5 @@ return requestBody;
 
 		return dateFormat.format(new Date(timestamp));
 	}
-	
+
 }

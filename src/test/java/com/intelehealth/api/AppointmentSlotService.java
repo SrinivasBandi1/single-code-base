@@ -60,8 +60,8 @@ public class AppointmentSlotService {
 
         response.then().statusCode(200);
 
-        System.out.println("[AppointmentSlotService] Slots fetched for "
-                + fromDate + " → " + response.asPrettyString());
+   //     System.out.println("[AppointmentSlotService] Slots fetched for "
+   //             + fromDate + " → " + response.asPrettyString());
 
         return response.jsonPath().getList("dates");
     }

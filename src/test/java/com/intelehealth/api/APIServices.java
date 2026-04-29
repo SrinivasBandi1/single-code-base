@@ -90,20 +90,21 @@ public class APIServices {
 		// Step 1: Create visit → extract openMrsId and patientId
 		Response visitResponse = request.body(PayloadGenerator.createVisitUsingRestAssured()).post(VISIT_PUSH_ENDPOINT);
 
-		System.out.println(visitResponse.asPrettyString());
+//		System.out.println(visitResponse.asPrettyString());
 
 		String openMrsId = visitResponse.jsonPath().getString("data.patientlist[0].openmrs_id"); 
 
 		String patientId = visitResponse.jsonPath().getString("data.patientlist[0].uuid");
-
+		 String visitUuid = visitResponse.jsonPath()
+		            .getString("data.visitlist[0].uuid");
 		System.out.println("[APIServices] openMrsId : " + openMrsId);
 		System.out.println("[APIServices] patientId : " + patientId);
 
 		// Step 2: Build appointment payload with real values
-		Map<String, Object> payload = PayloadGenerator.createAppointmentPayload(openMrsId, patientId);
+		Map<String, Object> payload = PayloadGenerator.createAppointmentPayload(openMrsId, patientId,visitUuid);
 
-		System.out.println("[APIServices] Appointment payload → "
-				+ new GsonBuilder().setPrettyPrinting().create().toJson(payload));
+	//	System.out.println("[APIServices] Appointment payload → "
+	//			+ new GsonBuilder().setPrettyPrinting().create().toJson(payload));
 
 		// Step 3: Push appointment
 		Response response = request.body(payload).post(VISIT_PUSH_ENDPOINT);
