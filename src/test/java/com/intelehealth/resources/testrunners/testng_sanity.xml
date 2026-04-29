@@ -16,8 +16,8 @@
 		<classes>
 			<!--			<class name="com.intelehealth.tests.ChatPageTest" />
 -->
-			<class name="com.intelehealth.tests.AwaitPriortyInProgressTest" />
-
+<class name="com.intelehealth.tests.CalendarPageTest" />
+			<class name="com.intelehealth.tests.ChangePasswordLanguageTest" />
 			<!--	<class name="com.intelehealth.tests.ProfilePageTest" />
 			<class name="com.intelehealth.tests.SearchPageTest" />
 			<class name="com.intelehealth.tests.NotificationPageTest" />
