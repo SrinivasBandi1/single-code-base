@@ -85,6 +85,14 @@ public class End2EndTest extends BasePage {
 		if (!appointmentModuleEnabled) {
 			throw new SkipException("Skipping tests: Appointment module not enabled for this project");
 		} else {
+			boolean appointmentCreated = APIServices
+					.createAppointmentUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
+
+			if (!appointmentCreated) {
+				throw new SkipException("⚠️ Skipping AppointmentPageTest — no slots available. "
+						+ "Tests will resume when slots are available.");
+			}
+			// APIServices.createAppointmentUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
 			end2endPage.LoginCancelAppointmentLogout();
 		}
 	}
@@ -97,6 +105,14 @@ public class End2EndTest extends BasePage {
 		if (!appointmentModuleEnabled) {
 			throw new SkipException("Skipping tests: Appointment module not enabled for this project");
 		} else {
+			boolean appointmentCreated = APIServices
+					.createAppointmentUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
+
+			if (!appointmentCreated) {
+				throw new SkipException("⚠️ Skipping AppointmentPageTest — no slots available. "
+						+ "Tests will resume when slots are available.");
+			}
+			// APIServices.createAppointmentUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
 
 			end2endPage.LoginAppointmentVisitSummaryViewPrescription();
 		}

@@ -1,7 +1,5 @@
 package com.intelehealth.tests;
 
-import static org.testng.Assert.fail;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -33,14 +31,14 @@ import io.restassured.response.Response;
 public class AppointmentPageTest {
 	Properties prop;
 	WebDriver driver;
-	static BasePage basePage;
+	BasePage basePage;
 	LoginPage loginPage;
 	DashboardPage dashboardPage;
 	AppointmentPage appointmentPage;
 	CalendarPage calendarPage;
 	Credentials credentials;
 	String testEnum;
-	public static final boolean APPOINTMENT_MODULE_ENABLED_KEY =false;
+	public static final boolean APPOINTMENT_MODULE_ENABLED_KEY = false;
 
 	@BeforeClass
 	public void getAdminData() throws IOException {
@@ -76,6 +74,13 @@ public class AppointmentPageTest {
 		basePage = new BasePage();
 		prop = basePage.init_prop();
 		testEnum = method.getName().toUpperCase();
+		boolean appointmentCreated = APIServices
+				.createAppointmentUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
+
+		if (!appointmentCreated) {
+			throw new SkipException("⚠️ Skipping AppointmentPageTest — no slots available. "
+					+ "Tests will resume when slots are available.");
+		}
 		driver = basePage.init_driver1(prop, testEnum);
 		// driver = basePage.init_driver(prop);
 		loginPage = new LoginPage(driver);
@@ -84,7 +89,6 @@ public class AppointmentPageTest {
 		appointmentPage = new AppointmentPage(driver);
 		calendarPage = new CalendarPage(driver);
 		ScreenshotListener.setDriver(driver);
-		//APIServices.createAppointmentUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
 	}
 
 	@Test(priority = 1, description = "IDA4_1784_Appointments_Verify the UI elements of Appointment page", enabled = APPOINTMENT_MODULE_ENABLED_KEY)
@@ -188,10 +192,19 @@ public class AppointmentPageTest {
 		appointmentPage.clickOnCancelButtonInPopup();
 	}
 
-	@AfterMethod(alwaysRun = true)
-	public void tearDown() throws Throwable {
-		Thread.sleep(1000);
-		basePage.quitDriver(testEnum);
-		System.gc();
-	}
+	   @AfterMethod(alwaysRun = true)
+	    public void tearDown() {
+	        try {
+	            if (driver != null) {
+	                basePage.quitDriver(testEnum);
+	            }
+	        } finally {
+	            driver = null;
+	            loginPage = null;
+	            dashboardPage = null;
+	            appointmentPage = null;
+	            calendarPage = null;
+	            credentials = null;
+	        }
+	    }
 }

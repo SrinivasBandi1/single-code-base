@@ -85,26 +85,30 @@ public class APIServices {
 	 */
 	// ── Create appointment (full chain) ───────────────────────────────────
 
-	public static void createAppointmentUsingRestAssured(RequestSpecification request) {
+	public static boolean createAppointmentUsingRestAssured(RequestSpecification request) {
 
 		// Step 1: Create visit → extract openMrsId and patientId
 		Response visitResponse = request.body(PayloadGenerator.createVisitUsingRestAssured()).post(VISIT_PUSH_ENDPOINT);
 
 //		System.out.println(visitResponse.asPrettyString());
 
-		String openMrsId = visitResponse.jsonPath().getString("data.patientlist[0].openmrs_id"); 
+		String openMrsId = visitResponse.jsonPath().getString("data.patientlist[0].openmrs_id");
 
 		String patientId = visitResponse.jsonPath().getString("data.patientlist[0].uuid");
-		 String visitUuid = visitResponse.jsonPath()
-		            .getString("data.visitlist[0].uuid");
+		String visitUuid = visitResponse.jsonPath().getString("data.visitlist[0].uuid");
 		System.out.println("[APIServices] openMrsId : " + openMrsId);
 		System.out.println("[APIServices] patientId : " + patientId);
 
 		// Step 2: Build appointment payload with real values
-		Map<String, Object> payload = PayloadGenerator.createAppointmentPayload(openMrsId, patientId,visitUuid);
-
-	//	System.out.println("[APIServices] Appointment payload → "
-	//			+ new GsonBuilder().setPrettyPrinting().create().toJson(payload));
+		Map<String, Object> payload = PayloadGenerator.createAppointmentPayload(openMrsId, patientId, visitUuid);
+		// ── If no slot was available, signal caller to skip ───────────────────
+		if (payload == null) {
+			System.out.println(
+					"[APIServices] ⚠️ Appointment payload is null " + "— no slots available, tests will be skipped");
+			return false; // ← false = skip appointment tests
+		}
+		// System.out.println("[APIServices] Appointment payload → "
+		// + new GsonBuilder().setPrettyPrinting().create().toJson(payload));
 
 		// Step 3: Push appointment
 		Response response = request.body(payload).post(VISIT_PUSH_ENDPOINT);
@@ -112,6 +116,7 @@ public class APIServices {
 		System.out.println("[APIServices] Appointment response → " + response.asPrettyString());
 
 		response.then().statusCode(200);
+		return true;
 	}
 
 	public static void startVisitUsingRestAssured(RequestSpecification request) {

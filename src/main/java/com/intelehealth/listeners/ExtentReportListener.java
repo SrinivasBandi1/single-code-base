@@ -56,7 +56,6 @@ public class ExtentReportListener extends BasePage implements ITestListener {
 			}
 		}
 
-
 		// Include date and time in the file name
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 		FILE_NAME += "_" + LocalDateTime.now().format(formatter) + ".html";
@@ -72,7 +71,6 @@ public class ExtentReportListener extends BasePage implements ITestListener {
 
 		return extent;
 	}
-
 
 	public synchronized void logToExtentReport(String message) {
 		// Check if the test instance is available
@@ -115,39 +113,81 @@ public class ExtentReportListener extends BasePage implements ITestListener {
 		test.get().getModel().setStartTime(getTime(result.getStartMillis()));
 	}
 
+	@Override
 	public synchronized void onTestSuccess(ITestResult result) {
-		System.out.println((result.getMethod().getMethodName() + " passed!"));
+		System.out.println(result.getMethod().getMethodName() + " passed!");
+
 		try {
-			test.get().pass("Test passed", MediaEntityBuilder.createScreenCaptureFromPath(getScreenshot()).build());
-		} catch (IOException e) {
-			System.err
-					.println("Exception thrown while updating test pass status " + Arrays.toString(e.getStackTrace()));
+			String screenshotPath = safeScreenshot(result.getMethod().getMethodName());
+
+			if (screenshotPath != null) {
+				test.get().pass("Test passed", MediaEntityBuilder.createScreenCaptureFromPath(screenshotPath).build());
+			} else {
+				test.get().pass("Test passed (No screenshot - driver not available)");
+			}
+
+		} catch (Exception e) {
+			test.get().pass("Test passed (Screenshot failed safely)");
 		}
+
 		test.get().getModel().setEndTime(getTime(result.getEndMillis()));
 	}
 
+	@Override
 	public synchronized void onTestFailure(ITestResult result) {
-		System.out.println((result.getMethod().getMethodName() + " failed!"));
-		try {
-			test.get().fail(result.getThrowable(),
-					MediaEntityBuilder.createScreenCaptureFromPath(getScreenshot()).build());
-		} catch (IOException e) {
-			System.err
-					.println("Exception thrown while updating test fail status " + Arrays.toString(e.getStackTrace()));
+
+		// 🔥 MOST IMPORTANT FIX
+		if (result.getThrowable() instanceof org.testng.SkipException) {
+			System.out.println("⚠️ SkipException detected inside failure. Ignoring...");
+			return;
 		}
+
+		System.out.println(result.getMethod().getMethodName() + " failed!");
+
+		try {
+			String screenshotPath = safeScreenshot(result.getMethod().getMethodName());
+
+			if (screenshotPath != null) {
+				test.get().fail(result.getThrowable(),
+						MediaEntityBuilder.createScreenCaptureFromPath(screenshotPath).build());
+			} else {
+				test.get().fail(result.getThrowable());
+			}
+
+		} catch (Exception e) {
+			test.get().fail(result.getThrowable());
+		}
+
 		test.get().getModel().setEndTime(getTime(result.getEndMillis()));
 	}
 
+	@Override
 	public synchronized void onTestSkipped(ITestResult result) {
-		System.out.println((result.getMethod().getMethodName() + " skipped!"));
-		try {
-			test.get().skip(result.getThrowable(),
-					MediaEntityBuilder.createScreenCaptureFromPath(getScreenshot()).build());
-		} catch (IOException e) {
-			System.err
-					.println("Exception thrown while updating test skip status " + Arrays.toString(e.getStackTrace()));
+		System.out.println(result.getMethod().getMethodName() + " skipped!");
+
+		// ❌ NO screenshot here
+		if (result.getThrowable() != null) {
+			test.get().skip(result.getThrowable());
+		} else {
+			test.get().skip("Test skipped");
 		}
+
 		test.get().getModel().setEndTime(getTime(result.getEndMillis()));
+	}
+
+	private String safeScreenshot(String testName) {
+		try {
+			if (BasePage.getDriver() == null) {
+				System.out.println("⚠️ Driver is null → skipping screenshot");
+				return null;
+			}
+
+			return BasePage.getScreenshot(testName);
+
+		} catch (Exception e) {
+			System.out.println("⚠️ Screenshot failed safely: " + e.getMessage());
+			return null;
+		}
 	}
 
 	public synchronized void onTestFailedButWithinSuccessPercentage(ITestResult result) {

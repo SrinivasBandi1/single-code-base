@@ -19,10 +19,27 @@ public class ScreenshotListener extends TestListenerAdapter {
 		ScreenshotListener.driver = driver;
 	}
 
+	/*
+	 * @Override public void onTestFailure(ITestResult result) {
+	 * 
+	 * captureScreenshot(result.getName() + "_failure"); }
+	 */
 	@Override
 	public void onTestFailure(ITestResult result) {
 
+		// ✅ Ignore SkipException (VERY IMPORTANT)
+		if (result.getThrowable() instanceof org.testng.SkipException) {
+			System.out.println("⚠️ Skipped test detected in failure hook. Ignoring screenshot.");
+			return;
+		}
+
 		captureScreenshot(result.getName() + "_failure");
+	}
+
+	@Override
+	public void onTestSkipped(ITestResult result) {
+		System.out.println("⚠️ Test skipped: " + result.getName());
+		// ❌ DO NOT take screenshot for skipped tests
 	}
 
 	@Override
@@ -30,32 +47,58 @@ public class ScreenshotListener extends TestListenerAdapter {
 		captureScreenshot(result.getName() + "_success");
 	}
 
+	/*
+	 * private void captureScreenshot(String fileName) { if (driver == null) {
+	 * System.out.println("⚠️ Screenshot skipped: driver is null."); return; } if
+	 * (driver instanceof org.openqa.selenium.remote.RemoteWebDriver) { var
+	 * remoteDriver = (org.openqa.selenium.remote.RemoteWebDriver) driver; if
+	 * (remoteDriver.getSessionId() == null) {
+	 * System.out.println("⚠️ Screenshot skipped: driver session already quit.");
+	 * return; } }
+	 * 
+	 * if (driver != null) { File srcFile = ((TakesScreenshot)
+	 * driver).getScreenshotAs(OutputType.FILE); String timeStamp = new
+	 * SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()); String screenshotPath
+	 * = "./screenshots/" + fileName + "_" + timeStamp + ".png"; File destFile = new
+	 * File(screenshotPath);
+	 * 
+	 * try { FileUtils.copyFile(srcFile, destFile); //
+	 * System.out.println("Screenshot captured: " + screenshotPath); } catch
+	 * (Exception e) { e.printStackTrace(); } }
+	 * 
+	 * }
+	 * 
+	 */
 	private void captureScreenshot(String fileName) {
-		if (driver == null) {
-			System.out.println("⚠️ Screenshot skipped: driver is null.");
-			return;
-		}
-		if (driver instanceof org.openqa.selenium.remote.RemoteWebDriver) {
-			var remoteDriver = (org.openqa.selenium.remote.RemoteWebDriver) driver;
-			if (remoteDriver.getSessionId() == null) {
-				System.out.println("⚠️ Screenshot skipped: driver session already quit.");
+
+		try {
+			if (driver == null) {
+				System.out.println("⚠️ Screenshot skipped: driver is null.");
 				return;
 			}
-		}
 
-		if (driver != null) {
+			if (!(driver instanceof TakesScreenshot)) {
+				System.out.println("⚠️ Screenshot skipped: driver does not support screenshots.");
+				return;
+			}
+
+			if (driver instanceof org.openqa.selenium.remote.RemoteWebDriver) {
+				var remoteDriver = (org.openqa.selenium.remote.RemoteWebDriver) driver;
+				if (remoteDriver.getSessionId() == null) {
+					System.out.println("⚠️ Screenshot skipped: driver session already quit.");
+					return;
+				}
+			}
+
 			File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
 			String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 			String screenshotPath = "./screenshots/" + fileName + "_" + timeStamp + ".png";
 			File destFile = new File(screenshotPath);
 
-			try {
-				FileUtils.copyFile(srcFile, destFile);
-//                System.out.println("Screenshot captured: " + screenshotPath);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+			FileUtils.copyFile(srcFile, destFile);
 
+		} catch (Exception e) {
+			System.out.println("⚠️ Screenshot capture failed: " + e.getMessage());
+		}
 	}
 }

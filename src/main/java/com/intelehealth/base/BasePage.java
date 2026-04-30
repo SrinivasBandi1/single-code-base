@@ -123,7 +123,7 @@ public class BasePage {
 		String browserName = prop.getProperty("browser");
 
 		// System.setProperty("webdriver.manager", "false");
-		//System.setProperty("selenium.manager.disabled", "true");
+		// System.setProperty("selenium.manager.disabled", "true");
 		// System.out.println("Running on ----> " + browserName + " browser");
 		optionsManager = new OptionsManager(prop);
 
@@ -255,7 +255,8 @@ public class BasePage {
 		Properties prop = new Properties();
 		FileInputStream fis = null;
 		try {
-			fis = new FileInputStream(System.getProperty("user.dir") + "/src/main/java/com/intelehealth/config/config.qa.properties");
+			fis = new FileInputStream(
+					System.getProperty("user.dir") + "/src/main/java/com/intelehealth/config/config.qa.properties");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -299,7 +300,42 @@ public class BasePage {
 
 		return path;
 	}
+	public static String getScreenshot(String testName) {
+	    try {
+	        if (getDriver() == null) {
+	            System.out.println("⚠️ Driver is null → cannot take screenshot");
+	            return null;
+	        }
 
+	        if (!(getDriver() instanceof TakesScreenshot)) {
+	            System.out.println("⚠️ Driver does not support screenshots");
+	            return null;
+	        }
+
+	        // 📁 Create folder if not exists
+	        String folderPath = System.getProperty("user.dir") + "/TestReports/screenshots/";
+	        File folder = new File(folderPath);
+	        if (!folder.exists()) {
+	            folder.mkdirs();
+	        }
+
+	        // 🕒 Better readable timestamp
+	        String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+
+	        String path = folderPath + testName + "_" + timestamp + ".png";
+
+	        File src = ((TakesScreenshot) getDriver()).getScreenshotAs(OutputType.FILE);
+	        File destination = new File(path);
+
+	        FileUtils.copyFile(src, destination);
+
+	        return path;
+
+	    } catch (Exception e) {
+	        System.out.println("⚠️ Screenshot capture failed: " + e.getMessage());
+	        return null;
+	    }
+	}
 	public List<String> getPropertyList(String name) {
 		List<String> list = Arrays.asList(name.toString().split("\\,"));
 		// System.out.println(list);
@@ -351,6 +387,7 @@ public class BasePage {
 
 		return isEnabled;
 	}
+
 //write a refresh method to refresh the driver and page also handle the case when driver is null
 	public void refreshDriver() {
 		WebDriver driver = getDriver();

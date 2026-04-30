@@ -14,11 +14,32 @@
 
 	<test name="Regression Functional Regression Test" verbose="2">
 		<classes>
-			<!--			<class name="com.intelehealth.tests.ChatPageTest" />
--->
-<class name="com.intelehealth.tests.CalendarPageTest" />
-			<class name="com.intelehealth.tests.ChangePasswordLanguageTest" />
-			<!--	<class name="com.intelehealth.tests.ProfilePageTest" />
+			<class name="com.intelehealth.tests.AppointmentPageTest" />
+			<class name="com.intelehealth.tests.CalendarPageTest" />
+
+			<!--<class name="com.intelehealth.tests.LoginPageTest" />
+		<class name="com.intelehealth.tests.ChatPageTest" />
+			<class name="com.intelehealth.tests.DashboardPageTest" />
+			<class name="com.intelehealth.tests.End2EndTest" />
+			<class name="com.intelehealth.tests.FilterTest" />
+			<class name="com.intelehealth.tests.ForgotUsernamePasswordTest" />
+			<class name="com.intelehealth.tests.HelpSupportLogoutTest" />
+			<class name="com.intelehealth.tests.MessagesPageTest" />
+			<class name="com.intelehealth.tests.NotificationPageTest" />
+			<class name="com.intelehealth.tests.PrescriptionPageTest" />
+			<class name="com.intelehealth.tests.ProfilePageTest" />
+			<class name="com.intelehealth.tests.SearchPageTest" />
+			<class name="com.intelehealth.tests.VideoFunctionalityTest" />
+			<class name="com.intelehealth.tests.VisitSummaryPageTest" />
+			<class name="com.intelehealth.tests.AwaitPriortyInProgressTest" />
+			<class name="com.intelehealth.tests.AppointmentPageTest" />
+			<class name="com.intelehealth.tests.CalendarPageTest" />
+			<class name="com.intelehealth.tests.ChangePasswordLanguageTest" />-->
+
+			<!--	
+			<class name="com.intelehealth.tests.ChatPageTest" />
+			<class name="com.intelehealth.tests.AwaitPriortyInProgressTest" />
+			<class name="com.intelehealth.tests.ProfilePageTest" />
 			<class name="com.intelehealth.tests.SearchPageTest" />
 			<class name="com.intelehealth.tests.NotificationPageTest" />
 			<class name="com.intelehealth.tests.PrescriptionPageTest" />

@@ -102,9 +102,17 @@ public class DashboardPageTest extends BasePage {
 		if (!appointmentModuleEnabled) {
 			throw new SkipException("Skipping tests: Appointment module not enabled for this project");
 		} else {
-	//	APIServices.createAppointmentUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
-		dashboardPage.clickAptPatient();
-	}}
+			boolean appointmentCreated = APIServices
+					.createAppointmentUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
+
+			if (!appointmentCreated) {
+				throw new SkipException("⚠️ Skipping AppointmentPageTest — no slots available. "
+						+ "Tests will resume when slots are available.");
+			}
+			//APIServices.createAppointmentUsingRestAssured(Auth.buildRequestWithNurseAuthorization());
+			dashboardPage.clickAptPatient();
+		}
+	}
 
 	@Test(priority = 5, description = "IDA4_1583_Dashboard_Verify that priority visits section shows all the priority visits scheduled", enabled = true)
 	@Description("Verify that priority visits section shows all the priority visits scheduled")

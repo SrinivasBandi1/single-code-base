@@ -566,7 +566,11 @@ public class PayloadGenerator {
 		// ── Fetch real slot from API ───────────────────────────────────────────
 		AppointmentSlotService slotService = new AppointmentSlotService();
 		Map<String, Object> slot = slotService.getFirstAvailableSlot();
-
+		if (slot == null) {
+	        System.out.println("[PayloadGenerator] No slot available "
+	                + "— appointment payload cannot be built");
+	        return null;
+	    }
 		// ── Extract slot values ────────────────────────────────────────────────
 		String slotDate = (String) slot.get("slotDate");
 		String slotDay = (String) slot.get("slotDay");
