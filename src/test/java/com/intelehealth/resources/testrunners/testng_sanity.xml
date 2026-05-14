@@ -14,8 +14,7 @@
 
 	<test name="Regression Functional Regression Test" verbose="2">
 		<classes>
-			<class name="com.intelehealth.tests.AppointmentPageTest" />
-			<class name="com.intelehealth.tests.CalendarPageTest" />
+			<class name="com.intelehealth.tests.LoginPageTest" />
 
 			<!--<class name="com.intelehealth.tests.LoginPageTest" />
 		<class name="com.intelehealth.tests.ChatPageTest" />
