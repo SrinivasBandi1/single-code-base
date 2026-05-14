@@ -3,7 +3,7 @@ name: Automation CI Pipeline
 on:
   push:
     branches:
-      - feature/unified-framework-multi-env-support
+      - main
 
   workflow_dispatch:
     inputs:
