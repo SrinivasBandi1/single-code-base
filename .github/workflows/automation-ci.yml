@@ -3,7 +3,6 @@ name: Automation CI Pipeline
 on:
   push:
     branches: [ main ]
-
   workflow_dispatch:
     inputs:
       project:
@@ -15,7 +14,6 @@ on:
           - ida
           - nas
           - abdm
-
       environment:
         description: 'Environment to test against'
         required: true
@@ -27,7 +25,6 @@ on:
           - staging
           - demo
           - testing
-
       browser:
         description: 'Browser'
         required: false
@@ -50,9 +47,9 @@ jobs:
       name: github-pages
 
     env:
-      PROJECT: ${{ github.event.inputs.project || 'ida' }}
+      PROJECT:  ${{ github.event.inputs.project     || 'ida' }}
       ENV_NAME: ${{ github.event.inputs.environment || 'pathqa' }}
-      BROWSER: ${{ github.event.inputs.browser || 'chrome' }}
+      BROWSER:  ${{ github.event.inputs.browser     || 'chrome' }}
 
     steps:
 
@@ -85,19 +82,17 @@ jobs:
           restore-keys: maven-${{ runner.os }}
 
       ################################################################################
-      # STEP 4: Run Automation Tests
+      # STEP 4: Run Maven Tests
       ################################################################################
 
       - name: Run Maven tests
         run: |
           echo "Running suite → project: $PROJECT | env: $ENV_NAME | browser: $BROWSER"
-
           mvn clean test \
             -Dproject=$PROJECT \
             -Denv=$ENV_NAME \
             -Dbrowser=$BROWSER \
             -Dheadless=true
-
         continue-on-error: true
 
       ################################################################################
@@ -130,9 +125,8 @@ jobs:
       ################################################################################
 
       - name: Generate timestamp
-        id: timestamp
         run: |
-          echo "TIME_STAMP=$(date +"%Y-%m-%d_%H-%M-%S")" >> $GITHUB_ENV
+          echo "TIME_STAMP=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
 
       ################################################################################
       # STEP 8: Generate Allure Report
@@ -141,107 +135,154 @@ jobs:
       - name: Generate Allure report
         run: |
           mkdir -p allure-report
-
           allure generate allure-results --clean -o allure-report \
-            --report-name "$PROJECT Automation Report - $ENV_NAME"
+            --report-name "IDA/NAS Regression — $PROJECT / $ENV_NAME" || true
 
           if [ ! -f allure-report/index.html ]; then
-            echo "<html><body><h2>No Allure results found</h2></body></html>" \
+            echo "Creating fallback report"
+            echo "<html><body><h2>No Allure results found for $PROJECT / $ENV_NAME</h2></body></html>" \
               > allure-report/index.html
           fi
 
       ################################################################################
-      # STEP 9: Prepare GitHub Pages Structure
+      # STEP 9: Prepare GitHub Pages Folder Structure
+      # Every run gets its own timestamped folder:
+      #   reports/{project}/{timestamp}/
+      # The latest folder is also updated for quick access:
+      #   latest/{project}/
       ################################################################################
 
-      - name: Prepare report folders
+      - name: Prepare report folder structure
         run: |
-          mkdir -p github-pages
+          mkdir -p gh-pages-publish/reports/$PROJECT/$TIME_STAMP
+          mkdir -p gh-pages-publish/latest/$PROJECT
 
-          # Project wise history folder
-          mkdir -p github-pages/reports/$PROJECT/$TIME_STAMP
+          # Copy into timestamped folder (permanent, unique per run)
+          cp -r allure-report/* gh-pages-publish/reports/$PROJECT/$TIME_STAMP/
 
-          # Latest report folder
-          mkdir -p github-pages/latest/$PROJECT
-
-          # Copy timestamp report
-          cp -r allure-report/* github-pages/reports/$PROJECT/$TIME_STAMP/
-
-          # Update latest report
-          rm -rf github-pages/latest/$PROJECT/*
-          cp -r allure-report/* github-pages/latest/$PROJECT/
+          # Copy into latest folder (overwritten each run for that project)
+          cp -r allure-report/* gh-pages-publish/latest/$PROJECT/
 
       ################################################################################
-      # STEP 10: Create Index Page
+      # STEP 10: Deploy to GitHub Pages (branch-based, keeps all previous files)
       ################################################################################
 
-      - name: Create index page
-        run: |
-          cat > github-pages/index.html <<EOF
-          <html>
-          <head>
-            <title>Automation Reports</title>
-          </head>
-          <body>
-
-            <h1>Automation Allure Reports</h1>
-
-            <h2>Latest Reports</h2>
-
-            <ul>
-              <li><a href="./latest/ida/index.html">IDA Latest Report</a></li>
-              <li><a href="./latest/nas/index.html">NAS Latest Report</a></li>
-              <li><a href="./latest/abdm/index.html">ABDM Latest Report</a></li>
-            </ul>
-
-            <h2>Historical Reports</h2>
-
-            <p>Navigate to:</p>
-
-            <ul>
-              <li>/reports/ida/</li>
-              <li>/reports/nas/</li>
-              <li>/reports/abdm/</li>
-            </ul>
-
-          </body>
-          </html>
-          EOF
-
-      ################################################################################
-      # STEP 11: Deploy GitHub Pages
-      ################################################################################
-
-      - name: Deploy report to GitHub Pages
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./github-pages
-          keep_files: true
+          publish_dir: ./gh-pages-publish
+          keep_files: true     # ← This is the key: previous run folders are never deleted
 
       ################################################################################
-      # STEP 12: Workflow Summary
+      # STEP 11: Workflow Summary
       ################################################################################
 
-      - name: Add report link to summary
+      - name: Add report links to summary
         if: always()
         run: |
-          echo "## Automation Execution Completed" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          BASE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
-          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Project | $PROJECT |" >> $GITHUB_STEP_SUMMARY
-          echo "| Environment | $ENV_NAME |" >> $GITHUB_STEP_SUMMARY
-          echo "| Browser | $BROWSER |" >> $GITHUB_STEP_SUMMARY
-          echo "| Timestamp | $TIME_STAMP |" >> $GITHUB_STEP_SUMMARY
+          LATEST_URL="$BASE_URL/latest/$PROJECT/index.html"
+          HISTORICAL_URL="$BASE_URL/reports/$PROJECT/$TIME_STAMP/index.html"
 
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Automation Execution Completed"                >> $GITHUB_STEP_SUMMARY
+          echo ""                                                     >> $GITHUB_STEP_SUMMARY
+          echo "| Key             | Value           |"               >> $GITHUB_STEP_SUMMARY
+          echo "|-----------------|-----------------|"               >> $GITHUB_STEP_SUMMARY
+          echo "| **Project**     | \`$PROJECT\`    |"              >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | \`$ENV_NAME\`   |"              >> $GITHUB_STEP_SUMMARY
+          echo "| **Browser**     | \`$BROWSER\`    |"              >> $GITHUB_STEP_SUMMARY
+          echo "| **Timestamp**   | \`$TIME_STAMP\` |"              >> $GITHUB_STEP_SUMMARY
+          echo ""                                                     >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Report Links"                                 >> $GITHUB_STEP_SUMMARY
+          echo ""                                                     >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **This Run (Permanent):** [$TIME_STAMP Report]($HISTORICAL_URL)"  >> $GITHUB_STEP_SUMMARY
+          echo ""                                                     >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Latest $PROJECT Report:** [Open Latest]($LATEST_URL)"           >> $GITHUB_STEP_SUMMARY
+          echo ""                                                     >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [View Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
 
-          echo "### Latest Report" >> $GITHUB_STEP_SUMMARY
-          echo "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/latest/$PROJECT/index.html" >> $GITHUB_STEP_SUMMARY
+      ################################################################################
+      # STEP 12: Send Email Notification
+      ################################################################################
 
-          echo "" >> $GITHUB_STEP_SUMMARY
+      - name: Send email with report link
+        if: always()
+        env:
+          MAIL_CONNECTION: ${{ secrets.MAIL_CONNECTION }}
+          REPO:            ${{ github.repository }}
+          RUN_ID:          ${{ github.run_id }}
+        run: |
+          python3 <<EOF
+          import os, smtplib, ssl
+          from urllib.parse import urlparse
+          from email.message import EmailMessage
 
-          echo "### Historical Report" >> $GITHUB_STEP_SUMMARY
-          echo "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/reports/$PROJECT/$TIME_STAMP/index.html" >> $GITHUB_STEP_SUMMARY
+          conn = os.getenv("MAIL_CONNECTION")
+          if not conn:
+              print("MAIL_CONNECTION missing — skipping email")
+              exit(0)
+
+          parsed   = urlparse(conn)
+          username = parsed.username
+          password = parsed.password
+          host     = parsed.hostname
+          port     = parsed.port or 587
+
+          project   = os.getenv("PROJECT",    "ida")
+          env_name  = os.getenv("ENV_NAME",   "dev")
+          browser   = os.getenv("BROWSER",    "chrome")
+          timestamp = os.getenv("TIME_STAMP", "unknown")
+          repo      = os.getenv("REPO")
+          run_id    = os.getenv("RUN_ID")
+
+          owner     = repo.split("/")[0]
+          repo_name = repo.split("/")[1]
+          base_url  = f"https://{owner}.github.io/{repo_name}"
+
+          historical_url = f"{base_url}/reports/{project}/{timestamp}/index.html"
+          latest_url     = f"{base_url}/latest/{project}/index.html"
+
+          msg = EmailMessage()
+          msg['Subject'] = f"[{project.upper()} | {env_name.upper()}] Automation Report — {timestamp}"
+          msg['From']    = username
+          msg['To']      = username
+
+          msg.add_alternative(f'''
+          <h2>Automation Report Ready</h2>
+          <table cellpadding="8" style="border-collapse:collapse;font-family:sans-serif;">
+            <tr><td><b>Project</b></td><td>{project.upper()}</td></tr>
+            <tr><td><b>Environment</b></td><td>{env_name.upper()}</td></tr>
+            <tr><td><b>Browser</b></td><td>{browser}</td></tr>
+            <tr><td><b>Timestamp</b></td><td>{timestamp}</td></tr>
+          </table>
+          <br>
+          <p>
+            <a href="{historical_url}" style="padding:10px 20px;background:#4CAF50;color:white;
+               text-decoration:none;border-radius:4px;font-weight:bold;">
+              VIEW THIS RUN&#39;S REPORT
+            </a>
+          </p>
+          <p>
+            <a href="{latest_url}" style="padding:10px 20px;background:#2196F3;color:white;
+               text-decoration:none;border-radius:4px;font-weight:bold;">
+              VIEW LATEST {project.upper()} REPORT
+            </a>
+          </p>
+          <br>
+          <p>
+            <a href="https://github.com/{repo}/actions/runs/{run_id}">
+              View Workflow Run on GitHub
+            </a>
+          </p>
+          ''', subtype='html')
+
+          context = ssl.create_default_context()
+          with smtplib.SMTP(host, port) as server:
+              server.starttls(context=context)
+              server.login(username, password)
+              server.send_message(msg)
+
+          print("EMAIL SENT SUCCESSFULLY")
+          EOF
