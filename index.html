@@ -1,28 +1,210 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-  <title>Automation Reports</title>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Automation Dashboard</title>
+
+  <style>
+
+    body{
+      margin:0;
+      padding:0;
+      background:#f4f7fb;
+      font-family:Arial,sans-serif;
+    }
+
+    .header{
+      background:#111827;
+      color:white;
+      padding:30px;
+      text-align:center;
+    }
+
+    .header h1{
+      margin:0;
+      font-size:32px;
+    }
+
+    .container{
+      width:90%;
+      margin:auto;
+      padding:40px 0;
+    }
+
+    .section-title{
+      margin-bottom:20px;
+      color:#111827;
+    }
+
+    .cards{
+      display:flex;
+      gap:20px;
+      flex-wrap:wrap;
+    }
+
+    .card{
+      background:white;
+      width:300px;
+      border-radius:14px;
+      padding:25px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .card h2{
+      margin-top:0;
+      color:#2563eb;
+    }
+
+    .card p{
+      color:#4b5563;
+    }
+
+    .btn{
+      display:inline-block;
+      margin-top:15px;
+      padding:10px 18px;
+      background:#2563eb;
+      color:white;
+      text-decoration:none;
+      border-radius:8px;
+      font-weight:bold;
+    }
+
+    .btn:hover{
+      background:#1d4ed8;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      background:white;
+      margin-top:20px;
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    th{
+      background:#111827;
+      color:white;
+      padding:15px;
+    }
+
+    td{
+      padding:14px;
+      border-bottom:1px solid #e5e7eb;
+    }
+
+    tr:hover{
+      background:#f9fafb;
+    }
+
+    .footer{
+      text-align:center;
+      margin-top:50px;
+      color:#6b7280;
+    }
+
+  </style>
+
 </head>
+
 <body>
 
-  <h1>Automation Allure Reports</h1>
+  <div class="header">
+    <h1>Automation Allure Dashboard</h1>
+    <p>Project Wise Automation Reports</p>
+  </div>
 
-  <h2>Latest Reports</h2>
+  <div class="container">
 
-  <ul>
-    <li><a href="./latest/ida/index.html">IDA Latest Report</a></li>
-    <li><a href="./latest/nas/index.html">NAS Latest Report</a></li>
-    <li><a href="./latest/abdm/index.html">ABDM Latest Report</a></li>
-  </ul>
+    <h2 class="section-title">Latest Reports</h2>
 
-  <h2>Historical Reports</h2>
+    <div class="cards">
 
-  <p>Navigate to:</p>
+      <div class="card">
+        <h2>IDA Project</h2>
+        <p>Latest execution report for IDA automation.</p>
 
-  <ul>
-    <li>/reports/ida/</li>
-    <li>/reports/nas/</li>
-    <li>/reports/abdm/</li>
-  </ul>
+        <a class="btn"
+          href="./latest/ida/index.html">
+          Open Report
+        </a>
+      </div>
+
+      <div class="card">
+        <h2>NAS Project</h2>
+        <p>Latest execution report for NAS automation.</p>
+
+        <a class="btn"
+          href="./latest/nas/index.html">
+          Open Report
+        </a>
+      </div>
+
+      <div class="card">
+        <h2>ABDM Project</h2>
+        <p>Latest execution report for ABDM automation.</p>
+
+        <a class="btn"
+          href="./latest/abdm/index.html">
+          Open Report
+        </a>
+      </div>
+
+    </div>
+
+    <br><br>
+
+    <h2 class="section-title">Historical Reports</h2>
+
+    <table>
+
+      <tr>
+        <th>Project</th>
+        <th>Reports</th>
+      </tr>
+
+      <tr>
+        <td>IDA</td>
+        <td>
+          <a href="./reports/ida/">
+            View Historical Reports
+          </a>
+        </td>
+      </tr>
+
+      <tr>
+        <td>NAS</td>
+        <td>
+          <a href="./reports/nas/">
+            View Historical Reports
+          </a>
+        </td>
+      </tr>
+
+      <tr>
+        <td>ABDM</td>
+        <td>
+          <a href="./reports/abdm/">
+            View Historical Reports
+          </a>
+        </td>
+      </tr>
+
+    </table>
+
+    <div class="footer">
+      <p>
+        GitHub Actions + Allure Reporting Dashboard
+      </p>
+    </div>
+
+  </div>
 
 </body>
 </html>

@@ -1,0 +1,1 @@
+java.lang.RuntimeException: [ConfigManager] No URL found for project='ida' env='testing'. Check config.properties.
