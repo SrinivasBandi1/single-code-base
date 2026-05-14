@@ -49,7 +49,7 @@ public class ChatPageTest {
 		chatPage.chatOptionvisibility();
 	}
 	
-	//@Test(priority = 2, description = "IDA4_1828_Verify chat option functionality in visit summary page", enabled = true)
+	@Test(priority = 2, description = "IDA4_1828_Verify chat option functionality in visit summary page", enabled = true)
 	@Description("Verify chat option visibility")
 	@Severity(SeverityLevel.BLOCKER)
 	public void IDA4_1828_Chat() throws InterruptedException {
@@ -57,8 +57,7 @@ public class ChatPageTest {
 		//System.out.println("Started execution of IDA4_1828");
 		chatPage.chatOptionfunctionality();
 	}
-	
-//	@Test(priority = 3, description = "IDA4_1830_Verify sending message in chat", enabled = true)
+	@Test(priority = 3, description = "IDA4_1830_Verify sending message in chat", enabled = true)
 	@Description("Verify sending message in chat")
 	@Severity(SeverityLevel.BLOCKER)
 	public void IDA4_1830_Chat() throws InterruptedException {
@@ -67,7 +66,7 @@ public class ChatPageTest {
 		chatPage.chatSendMessage();
 	}
 	
-//	@Test(priority = 4, description = "IDA4_1833_Verify whether HW able to click on the PN when doctor send a chat msg", enabled = true)
+	@Test(priority = 4, description = "IDA4_1833_Verify whether HW able to click on the PN when doctor send a chat msg", enabled = true)
 	@Description("Verify whether HW able to click on the PN when doctor send a chat msg")
 	@Severity(SeverityLevel.BLOCKER)
 	public void IDA4_1833_Chat() throws InterruptedException {
@@ -76,7 +75,7 @@ public class ChatPageTest {
 		chatPage.chatSendMessagetoHW();
 	}
 	
-//	@Test(priority = 5, description = "IDA4_1834_Verify whether healthworker able to reply to doctor message/Check the sent message from doctor by logging into mobile", enabled = true)
+	@Test(priority = 5, description = "IDA4_1834_Verify whether healthworker able to reply to doctor message/Check the sent message from doctor by logging into mobile", enabled = true)
 	@Description("Verify whether healthworker able to reply to doctor message/Check the sent message from doctor by logging into mobile")
 	@Severity(SeverityLevel.BLOCKER)
 	public void IDA4_1834_Chat() throws InterruptedException {
