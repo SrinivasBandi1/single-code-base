@@ -48,7 +48,7 @@ jobs:
 
     env:
       PROJECT: ${{ github.event.inputs.project || 'ida' }}
-      ENV_NAME: ${{ github.event.inputs.environment || 'testing' }}
+      ENV_NAME: ${{ github.event.inputs.environment || 'pathqa' }}
       BROWSER: ${{ github.event.inputs.browser || 'chrome' }}
 
     steps:
