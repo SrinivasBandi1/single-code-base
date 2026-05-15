@@ -132,6 +132,42 @@ jobs:
           echo "TIME_STAMP=$(date +"%Y-%m-%d_%H-%M-%S")" >> $GITHUB_ENV
 
 ################################################################################
+# Checkout gh-pages to restore history + previous timestamps
+# *** THIS IS THE KEY STEP FOR TREND ***
+# Allure trend works by reading allure-results/history/ from the PREVIOUS run
+# We fetch that history folder from the last deployed report on gh-pages
+################################################################################
+
+      - name: Checkout gh-pages branch
+        run: |
+          git fetch origin gh-pages || echo "gh-pages branch not yet created"
+
+          if git show-ref --quiet refs/remotes/origin/gh-pages; then
+            git worktree add gh-pages-branch origin/gh-pages
+            echo "gh-pages branch checked out successfully"
+          else
+            mkdir -p gh-pages-branch
+            echo "No gh-pages branch yet — first run"
+          fi
+
+################################################################################
+# Restore Allure History for Trend
+# Copies history/ from the previous latest report into allure-results/
+# This is what makes the Trend graph show data across runs
+################################################################################
+
+      - name: Restore Allure History for Trend
+        run: |
+          HISTORY_SOURCE="gh-pages-branch/latest/$PROJECT/history"
+
+          if [ -d "$HISTORY_SOURCE" ]; then
+            echo "Found previous history — restoring for trend graph"
+            cp -r "$HISTORY_SOURCE" allure-results/history
+          else
+            echo "No previous history found — trend will start from this run"
+          fi
+
+################################################################################
 # Generate Allure Report
 ################################################################################
 
@@ -147,21 +183,6 @@ jobs:
           if [ ! -f allure-report/index.html ]; then
             echo "<html><body><h2>No results for $PROJECT / $ENV_NAME</h2></body></html>" \
               > allure-report/index.html
-          fi
-
-################################################################################
-# Checkout gh-pages branch to read existing timestamps
-# This is needed so we can list ALL previous runs in the history index page
-################################################################################
-
-      - name: Checkout gh-pages branch
-        run: |
-          git fetch origin gh-pages || echo "gh-pages branch not found yet"
-
-          if git show-ref --quiet refs/remotes/origin/gh-pages; then
-            git worktree add gh-pages-branch origin/gh-pages
-          else
-            mkdir -p gh-pages-branch
           fi
 
 ################################################################################
@@ -181,15 +202,13 @@ jobs:
           cp -r allure-report/* github-pages/latest/$PROJECT/
 
           # Carry over existing timestamped folders from gh-pages branch
-          # so keep_files=true has full context to build the history index
           if [ -d gh-pages-branch/reports/$PROJECT ]; then
             cp -rn gh-pages-branch/reports/$PROJECT/* \
               github-pages/reports/$PROJECT/ 2>/dev/null || true
           fi
 
 ################################################################################
-# Create History Index Page per Project
-# Reads all timestamp folders and generates clickable links for each run
+# Create History Index Pages
 ################################################################################
 
       - name: Create History Index Pages
@@ -202,10 +221,8 @@ jobs:
 
             REPORT_DIR="github-pages/reports/$proj"
 
-            # Collect all timestamp folders sorted newest first
             TIMESTAMPS=$(ls -r $REPORT_DIR 2>/dev/null | grep -v index.html || true)
 
-            # Build rows HTML
             ROWS=""
             INDEX=1
             for TS in $TIMESTAMPS; do
@@ -249,8 +266,6 @@ jobs:
                       box-shadow:0 4px 10px rgba(0,0,0,0.08); }
               th { background:#111827; color:white; padding:14px 16px; text-align:left; }
               tr:hover td { background:#f0f4ff; }
-              .badge { display:inline-block; padding:3px 10px; border-radius:20px;
-                       background:#dbeafe; color:#1d4ed8; font-size:12px; font-weight:bold; }
             </style>
           </head>
           <body>
@@ -304,8 +319,7 @@ jobs:
                      background:#2563eb; color:white; text-decoration:none;
                      border-radius:8px; font-weight:bold; margin-right:8px; }
               .btn:hover { background:#1d4ed8; }
-              .btn-outline { background:white; color:#2563eb;
-                             border:2px solid #2563eb; }
+              .btn-outline { background:white; color:#2563eb; border:2px solid #2563eb; }
               .btn-outline:hover { background:#eff6ff; }
               table { width:100%; border-collapse:collapse; background:white;
                       margin-top:20px; border-radius:12px; overflow:hidden;
@@ -324,38 +338,29 @@ jobs:
             <div class="container">
               <h2 class="section-title">Latest Reports</h2>
               <div class="cards">
-
                 <div class="card">
                   <h2>IDA Project</h2>
                   <p>Latest execution report for IDA automation.</p>
                   <a class="btn" href="./latest/ida/index.html">Open Latest</a>
                   <a class="btn btn-outline" href="./reports/ida/index.html">History</a>
                 </div>
-
                 <div class="card">
                   <h2>NAS Project</h2>
                   <p>Latest execution report for NAS automation.</p>
                   <a class="btn" href="./latest/nas/index.html">Open Latest</a>
                   <a class="btn btn-outline" href="./reports/nas/index.html">History</a>
                 </div>
-
                 <div class="card">
                   <h2>ABDM Project</h2>
                   <p>Latest execution report for ABDM automation.</p>
                   <a class="btn" href="./latest/abdm/index.html">Open Latest</a>
                   <a class="btn btn-outline" href="./reports/abdm/index.html">History</a>
                 </div>
-
               </div>
-
               <br><br>
-
               <h2 class="section-title">Historical Reports</h2>
               <table>
-                <tr>
-                  <th>Project</th>
-                  <th>Reports</th>
-                </tr>
+                <tr><th>Project</th><th>Reports</th></tr>
                 <tr>
                   <td>IDA</td>
                   <td><a href="./reports/ida/index.html">View Historical Reports</a></td>
@@ -369,7 +374,6 @@ jobs:
                   <td><a href="./reports/abdm/index.html">View Historical Reports</a></td>
                 </tr>
               </table>
-
               <div class="footer">
                 <p>GitHub Actions + Allure Reporting Dashboard</p>
               </div>
@@ -398,20 +402,20 @@ jobs:
         run: |
           BASE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
-          echo "## Automation Execution Completed"          >> $GITHUB_STEP_SUMMARY
-          echo ""                                           >> $GITHUB_STEP_SUMMARY
-          echo "| Key         | Value         |"           >> $GITHUB_STEP_SUMMARY
-          echo "|-------------|---------------|"           >> $GITHUB_STEP_SUMMARY
-          echo "| Project     | \`$PROJECT\`  |"          >> $GITHUB_STEP_SUMMARY
-          echo "| Environment | \`$ENV_NAME\` |"          >> $GITHUB_STEP_SUMMARY
-          echo "| Browser     | \`$BROWSER\`  |"          >> $GITHUB_STEP_SUMMARY
-          echo "| Timestamp   | \`$TIME_STAMP\` |"        >> $GITHUB_STEP_SUMMARY
-          echo ""                                           >> $GITHUB_STEP_SUMMARY
-          echo "### Dashboard"                             >> $GITHUB_STEP_SUMMARY
-          echo "$BASE_URL/"                                >> $GITHUB_STEP_SUMMARY
-          echo ""                                          >> $GITHUB_STEP_SUMMARY
-          echo "### Latest Report"                         >> $GITHUB_STEP_SUMMARY
-          echo "$BASE_URL/latest/$PROJECT/index.html"      >> $GITHUB_STEP_SUMMARY
-          echo ""                                          >> $GITHUB_STEP_SUMMARY
-          echo "### This Run's Report"                     >> $GITHUB_STEP_SUMMARY
+          echo "## Automation Execution Completed"            >> $GITHUB_STEP_SUMMARY
+          echo ""                                             >> $GITHUB_STEP_SUMMARY
+          echo "| Key         | Value           |"           >> $GITHUB_STEP_SUMMARY
+          echo "|-------------|-----------------|"           >> $GITHUB_STEP_SUMMARY
+          echo "| Project     | \`$PROJECT\`    |"          >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | \`$ENV_NAME\`   |"          >> $GITHUB_STEP_SUMMARY
+          echo "| Browser     | \`$BROWSER\`    |"          >> $GITHUB_STEP_SUMMARY
+          echo "| Timestamp   | \`$TIME_STAMP\` |"          >> $GITHUB_STEP_SUMMARY
+          echo ""                                             >> $GITHUB_STEP_SUMMARY
+          echo "### Dashboard"                               >> $GITHUB_STEP_SUMMARY
+          echo "$BASE_URL/"                                  >> $GITHUB_STEP_SUMMARY
+          echo ""                                            >> $GITHUB_STEP_SUMMARY
+          echo "### Latest Report"                           >> $GITHUB_STEP_SUMMARY
+          echo "$BASE_URL/latest/$PROJECT/index.html"        >> $GITHUB_STEP_SUMMARY
+          echo ""                                            >> $GITHUB_STEP_SUMMARY
+          echo "### This Run's Report"                       >> $GITHUB_STEP_SUMMARY
           echo "$BASE_URL/reports/$PROJECT/$TIME_STAMP/index.html" >> $GITHUB_STEP_SUMMARY
