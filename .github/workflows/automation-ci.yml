@@ -47,9 +47,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      PROJECT: ${{ github.event.inputs.project || 'ida' }}
+      PROJECT:  ${{ github.event.inputs.project     || 'ida' }}
       ENV_NAME: ${{ github.event.inputs.environment || 'pathqa' }}
-      BROWSER: ${{ github.event.inputs.browser || 'chrome' }}
+      BROWSER:  ${{ github.event.inputs.browser     || 'chrome' }}
 
     steps:
 
@@ -88,10 +88,9 @@ jobs:
 
       - name: Run Automation Tests
         run: |
-
-          echo "Project  : $PROJECT"
+          echo "Project     : $PROJECT"
           echo "Environment : $ENV_NAME"
-          echo "Browser : $BROWSER"
+          echo "Browser     : $BROWSER"
 
           mvn clean test \
             -Dproject=$PROJECT \
@@ -107,7 +106,6 @@ jobs:
 
       - name: Verify Allure Results
         run: |
-
           if [ ! -d allure-results ]; then
             mkdir -p allure-results
           fi
@@ -118,14 +116,11 @@ jobs:
 
       - name: Install Allure CLI
         run: |
-
           curl -Ls -o allure.tgz \
           https://github.com/allure-framework/allure2/releases/download/2.24.1/allure-2.24.1.tgz
 
           sudo tar -zxvf allure.tgz -C /opt/
-
           sudo ln -sf /opt/allure-2.24.1/bin/allure /usr/bin/allure
-
           allure --version
 
 ################################################################################
@@ -134,7 +129,6 @@ jobs:
 
       - name: Generate Timestamp
         run: |
-
           echo "TIME_STAMP=$(date +"%Y-%m-%d_%H-%M-%S")" >> $GITHUB_ENV
 
 ################################################################################
@@ -143,13 +137,32 @@ jobs:
 
       - name: Generate Allure Report
         run: |
-
           mkdir -p allure-report
 
           allure generate allure-results \
             --clean \
             -o allure-report \
-            --report-name "$PROJECT Automation Report"
+            --report-name "$PROJECT Automation Report" || true
+
+          if [ ! -f allure-report/index.html ]; then
+            echo "<html><body><h2>No results for $PROJECT / $ENV_NAME</h2></body></html>" \
+              > allure-report/index.html
+          fi
+
+################################################################################
+# Checkout gh-pages branch to read existing timestamps
+# This is needed so we can list ALL previous runs in the history index page
+################################################################################
+
+      - name: Checkout gh-pages branch
+        run: |
+          git fetch origin gh-pages || echo "gh-pages branch not found yet"
+
+          if git show-ref --quiet refs/remotes/origin/gh-pages; then
+            git worktree add gh-pages-branch origin/gh-pages
+          else
+            mkdir -p gh-pages-branch
+          fi
 
 ################################################################################
 # Prepare Report Structure
@@ -157,185 +170,180 @@ jobs:
 
       - name: Prepare Report Structure
         run: |
-
-          mkdir -p github-pages
-
           mkdir -p github-pages/reports/$PROJECT/$TIME_STAMP
-
           mkdir -p github-pages/latest/$PROJECT
 
-          cp -r allure-report/* \
-            github-pages/reports/$PROJECT/$TIME_STAMP/
+          # Copy into timestamped folder
+          cp -r allure-report/* github-pages/reports/$PROJECT/$TIME_STAMP/
 
+          # Copy into latest folder
           rm -rf github-pages/latest/$PROJECT/*
+          cp -r allure-report/* github-pages/latest/$PROJECT/
 
-          cp -r allure-report/* \
-            github-pages/latest/$PROJECT/
+          # Carry over existing timestamped folders from gh-pages branch
+          # so keep_files=true has full context to build the history index
+          if [ -d gh-pages-branch/reports/$PROJECT ]; then
+            cp -rn gh-pages-branch/reports/$PROJECT/* \
+              github-pages/reports/$PROJECT/ 2>/dev/null || true
+          fi
 
 ################################################################################
-# Create Professional Dashboard
+# Create History Index Page per Project
+# Reads all timestamp folders and generates clickable links for each run
+################################################################################
+
+      - name: Create History Index Pages
+        run: |
+          BASE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+
+          for proj in ida nas abdm; do
+
+            mkdir -p github-pages/reports/$proj
+
+            REPORT_DIR="github-pages/reports/$proj"
+
+            # Collect all timestamp folders sorted newest first
+            TIMESTAMPS=$(ls -r $REPORT_DIR 2>/dev/null | grep -v index.html || true)
+
+            # Build rows HTML
+            ROWS=""
+            INDEX=1
+            for TS in $TIMESTAMPS; do
+              ROWS="$ROWS
+              <tr>
+                <td style='padding:12px 16px;border-bottom:1px solid #e5e7eb;'>$INDEX</td>
+                <td style='padding:12px 16px;border-bottom:1px solid #e5e7eb;'>$TS</td>
+                <td style='padding:12px 16px;border-bottom:1px solid #e5e7eb;'>
+                  <a href='$BASE_URL/reports/$proj/$TS/index.html'
+                     style='color:#2563eb;font-weight:bold;text-decoration:none;'>
+                    Open Report
+                  </a>
+                </td>
+              </tr>"
+              INDEX=$((INDEX + 1))
+            done
+
+            if [ -z "$TIMESTAMPS" ]; then
+              ROWS="<tr><td colspan='3' style='padding:20px;text-align:center;color:#6b7280;'>
+                No reports found yet.</td></tr>"
+            fi
+
+            cat > github-pages/reports/$proj/index.html <<HEREDOC
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${proj^^} Historical Reports</title>
+            <style>
+              body { margin:0; padding:0; background:#f4f7fb; font-family:Arial,sans-serif; }
+              .header { background:#111827; color:white; padding:24px 30px; }
+              .header h1 { margin:0; font-size:24px; }
+              .header p  { margin:6px 0 0; color:#9ca3af; font-size:14px; }
+              .back { display:inline-block; margin:20px 30px 0; color:#2563eb;
+                      text-decoration:none; font-size:14px; }
+              .back:hover { text-decoration:underline; }
+              .container { width:90%; margin:20px auto 60px; }
+              table { width:100%; border-collapse:collapse; background:white;
+                      border-radius:12px; overflow:hidden;
+                      box-shadow:0 4px 10px rgba(0,0,0,0.08); }
+              th { background:#111827; color:white; padding:14px 16px; text-align:left; }
+              tr:hover td { background:#f0f4ff; }
+              .badge { display:inline-block; padding:3px 10px; border-radius:20px;
+                       background:#dbeafe; color:#1d4ed8; font-size:12px; font-weight:bold; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>${proj^^} — Historical Reports</h1>
+              <p>All past automation runs for the ${proj^^} project</p>
+            </div>
+            <a class="back" href="$BASE_URL/">← Back to Dashboard</a>
+            <div class="container">
+              <table>
+                <tr>
+                  <th>#</th>
+                  <th>Run Timestamp</th>
+                  <th>Report Link</th>
+                </tr>
+                $ROWS
+              </table>
+            </div>
+          </body>
+          </html>
+          HEREDOC
+
+          done
+
+################################################################################
+# Create Main Dashboard
 ################################################################################
 
       - name: Create Dashboard UI
         run: |
-
-          cat > github-pages/index.html <<EOF
+          cat > github-pages/index.html <<'EOF'
           <!DOCTYPE html>
           <html lang="en">
-
           <head>
-
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
             <title>Automation Dashboard</title>
-
             <style>
-
-              body{
-                margin:0;
-                padding:0;
-                background:#f4f7fb;
-                font-family:Arial,sans-serif;
-              }
-
-              .header{
-                background:#111827;
-                color:white;
-                padding:30px;
-                text-align:center;
-              }
-
-              .header h1{
-                margin:0;
-                font-size:32px;
-              }
-
-              .container{
-                width:90%;
-                margin:auto;
-                padding:40px 0;
-              }
-
-              .section-title{
-                margin-bottom:20px;
-                color:#111827;
-              }
-
-              .cards{
-                display:flex;
-                gap:20px;
-                flex-wrap:wrap;
-              }
-
-              .card{
-                background:white;
-                width:300px;
-                border-radius:14px;
-                padding:25px;
-                box-shadow:0 4px 12px rgba(0,0,0,0.1);
-              }
-
-              .card h2{
-                margin-top:0;
-                color:#2563eb;
-              }
-
-              .card p{
-                color:#4b5563;
-              }
-
-              .btn{
-                display:inline-block;
-                margin-top:15px;
-                padding:10px 18px;
-                background:#2563eb;
-                color:white;
-                text-decoration:none;
-                border-radius:8px;
-                font-weight:bold;
-              }
-
-              .btn:hover{
-                background:#1d4ed8;
-              }
-
-              table{
-                width:100%;
-                border-collapse:collapse;
-                background:white;
-                margin-top:20px;
-                border-radius:12px;
-                overflow:hidden;
-                box-shadow:0 4px 10px rgba(0,0,0,0.1);
-              }
-
-              th{
-                background:#111827;
-                color:white;
-                padding:15px;
-              }
-
-              td{
-                padding:14px;
-                border-bottom:1px solid #e5e7eb;
-              }
-
-              tr:hover{
-                background:#f9fafb;
-              }
-
-              .footer{
-                text-align:center;
-                margin-top:50px;
-                color:#6b7280;
-              }
-
+              body { margin:0; padding:0; background:#f4f7fb; font-family:Arial,sans-serif; }
+              .header { background:#111827; color:white; padding:30px; text-align:center; }
+              .header h1 { margin:0; font-size:32px; }
+              .header p  { margin:8px 0 0; color:#9ca3af; }
+              .container { width:90%; margin:auto; padding:40px 0; }
+              .section-title { margin-bottom:20px; color:#111827; }
+              .cards { display:flex; gap:20px; flex-wrap:wrap; }
+              .card { background:white; width:300px; border-radius:14px; padding:25px;
+                      box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+              .card h2 { margin-top:0; color:#2563eb; }
+              .card p  { color:#4b5563; }
+              .btn { display:inline-block; margin-top:10px; padding:10px 18px;
+                     background:#2563eb; color:white; text-decoration:none;
+                     border-radius:8px; font-weight:bold; margin-right:8px; }
+              .btn:hover { background:#1d4ed8; }
+              .btn-outline { background:white; color:#2563eb;
+                             border:2px solid #2563eb; }
+              .btn-outline:hover { background:#eff6ff; }
+              table { width:100%; border-collapse:collapse; background:white;
+                      margin-top:20px; border-radius:12px; overflow:hidden;
+                      box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+              th { background:#111827; color:white; padding:15px; text-align:left; }
+              td { padding:14px; border-bottom:1px solid #e5e7eb; }
+              tr:hover td { background:#f9fafb; }
+              .footer { text-align:center; margin-top:50px; color:#6b7280; }
             </style>
-
           </head>
-
           <body>
-
             <div class="header">
               <h1>Automation Allure Dashboard</h1>
-              <p>Project Wise Automation Reports</p>
+              <p>Project Wise Automation Reports — GitHub Actions + Allure</p>
             </div>
-
             <div class="container">
-
               <h2 class="section-title">Latest Reports</h2>
-
               <div class="cards">
 
                 <div class="card">
                   <h2>IDA Project</h2>
                   <p>Latest execution report for IDA automation.</p>
-
-                  <a class="btn"
-                    href="./latest/ida/index.html">
-                    Open Report
-                  </a>
+                  <a class="btn" href="./latest/ida/index.html">Open Latest</a>
+                  <a class="btn btn-outline" href="./reports/ida/index.html">History</a>
                 </div>
 
                 <div class="card">
                   <h2>NAS Project</h2>
                   <p>Latest execution report for NAS automation.</p>
-
-                  <a class="btn"
-                    href="./latest/nas/index.html">
-                    Open Report
-                  </a>
+                  <a class="btn" href="./latest/nas/index.html">Open Latest</a>
+                  <a class="btn btn-outline" href="./reports/nas/index.html">History</a>
                 </div>
 
                 <div class="card">
                   <h2>ABDM Project</h2>
                   <p>Latest execution report for ABDM automation.</p>
-
-                  <a class="btn"
-                    href="./latest/abdm/index.html">
-                    Open Report
-                  </a>
+                  <a class="btn" href="./latest/abdm/index.html">Open Latest</a>
+                  <a class="btn btn-outline" href="./reports/abdm/index.html">History</a>
                 </div>
 
               </div>
@@ -343,51 +351,29 @@ jobs:
               <br><br>
 
               <h2 class="section-title">Historical Reports</h2>
-
               <table>
-
                 <tr>
                   <th>Project</th>
                   <th>Reports</th>
                 </tr>
-
                 <tr>
                   <td>IDA</td>
-                  <td>
-                    <a href="./reports/ida/">
-                      View Historical Reports
-                    </a>
-                  </td>
+                  <td><a href="./reports/ida/index.html">View Historical Reports</a></td>
                 </tr>
-
                 <tr>
                   <td>NAS</td>
-                  <td>
-                    <a href="./reports/nas/">
-                      View Historical Reports
-                    </a>
-                  </td>
+                  <td><a href="./reports/nas/index.html">View Historical Reports</a></td>
                 </tr>
-
                 <tr>
                   <td>ABDM</td>
-                  <td>
-                    <a href="./reports/abdm/">
-                      View Historical Reports
-                    </a>
-                  </td>
+                  <td><a href="./reports/abdm/index.html">View Historical Reports</a></td>
                 </tr>
-
               </table>
 
               <div class="footer">
-                <p>
-                  GitHub Actions + Allure Reporting Dashboard
-                </p>
+                <p>GitHub Actions + Allure Reporting Dashboard</p>
               </div>
-
             </div>
-
           </body>
           </html>
           EOF
@@ -410,26 +396,22 @@ jobs:
       - name: Add Workflow Summary
         if: always()
         run: |
+          BASE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
-          echo "## Automation Execution Completed" >> $GITHUB_STEP_SUMMARY
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Project | $PROJECT |" >> $GITHUB_STEP_SUMMARY
-          echo "| Environment | $ENV_NAME |" >> $GITHUB_STEP_SUMMARY
-          echo "| Browser | $BROWSER |" >> $GITHUB_STEP_SUMMARY
-          echo "| Timestamp | $TIME_STAMP |" >> $GITHUB_STEP_SUMMARY
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "### Dashboard URL" >> $GITHUB_STEP_SUMMARY
-
-          echo "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> $GITHUB_STEP_SUMMARY
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "### Latest Report" >> $GITHUB_STEP_SUMMARY
-
-          echo "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/latest/$PROJECT/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "## Automation Execution Completed"          >> $GITHUB_STEP_SUMMARY
+          echo ""                                           >> $GITHUB_STEP_SUMMARY
+          echo "| Key         | Value         |"           >> $GITHUB_STEP_SUMMARY
+          echo "|-------------|---------------|"           >> $GITHUB_STEP_SUMMARY
+          echo "| Project     | \`$PROJECT\`  |"          >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | \`$ENV_NAME\` |"          >> $GITHUB_STEP_SUMMARY
+          echo "| Browser     | \`$BROWSER\`  |"          >> $GITHUB_STEP_SUMMARY
+          echo "| Timestamp   | \`$TIME_STAMP\` |"        >> $GITHUB_STEP_SUMMARY
+          echo ""                                           >> $GITHUB_STEP_SUMMARY
+          echo "### Dashboard"                             >> $GITHUB_STEP_SUMMARY
+          echo "$BASE_URL/"                                >> $GITHUB_STEP_SUMMARY
+          echo ""                                          >> $GITHUB_STEP_SUMMARY
+          echo "### Latest Report"                         >> $GITHUB_STEP_SUMMARY
+          echo "$BASE_URL/latest/$PROJECT/index.html"      >> $GITHUB_STEP_SUMMARY
+          echo ""                                          >> $GITHUB_STEP_SUMMARY
+          echo "### This Run's Report"                     >> $GITHUB_STEP_SUMMARY
+          echo "$BASE_URL/reports/$PROJECT/$TIME_STAMP/index.html" >> $GITHUB_STEP_SUMMARY
