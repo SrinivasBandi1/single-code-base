@@ -9,7 +9,7 @@
 		<listener class-name="com.intelehealth.listeners.ExtentReportListener" />
 		<listener class-name="com.intelehealth.listeners.GlobalExceptionHandler" />
 		<listener class-name="com.intelehealth.listeners.TestAllureListener" />
-
+ 
 	</listeners>
 
 	<test name="Regression Functional Regression Test" verbose="2">
