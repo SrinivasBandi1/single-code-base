@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
+      - feature/unified-framework-multi-env-support
 
   workflow_dispatch:
     inputs:
+
       project:
-        description: 'Project to test'
+        description: 'Select Project'
         required: true
         default: 'ida'
         type: choice
@@ -16,9 +18,10 @@ on:
           - ida
           - nas
           - abdm
+          - telemedkg
 
       environment:
-        description: 'Environment'
+        description: 'Select Environment'
         required: true
         default: 'testing'
         type: choice
@@ -30,14 +33,13 @@ on:
           - testing
 
       browser:
-        description: 'Browser'
+        description: 'Select Browser'
         required: true
         default: 'chrome'
         type: choice
         options:
           - chrome
           - firefox
-
 permissions:
   contents: write
 
